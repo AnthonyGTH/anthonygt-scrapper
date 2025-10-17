@@ -117,6 +117,9 @@ class ProductGenerator:
     async def _save_generated_products(self, products: List[Dict[str, Any]]):
         """Guardar productos generados en archivo"""
         try:
+            # Crear directorio si no existe
+            os.makedirs("scraper", exist_ok=True)
+            
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
             filename = f"scraper/generated_products_{timestamp}.json"
             

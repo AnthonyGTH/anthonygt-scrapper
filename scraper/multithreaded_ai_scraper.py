@@ -412,7 +412,21 @@ class MultithreadedAIScraper:
             elif ai_response.startswith("```"):
                 ai_response = ai_response.replace("```", "").strip()
             
-            analysis = json.loads(ai_response)
+            # Limpiar caracteres problemáticos
+            ai_response = ai_response.replace('\n', ' ').replace('\r', ' ')
+            
+            try:
+                analysis = json.loads(ai_response)
+            except json.JSONDecodeError as e:
+                print(f"❌ Error parsing AI response: {e}")
+                print(f"Response: {ai_response[:200]}...")
+                return {
+                    'confidence_score': 0.5,
+                    'reasoning': 'Error parsing AI response',
+                    'market_opinion': 'No analysis available',
+                    'recommendation': 'Manual review required',
+                    'resell_potential': 5
+                }
             
             return {
                 'confidence_score': analysis.get('confidence_score', 0.5),
@@ -519,7 +533,21 @@ class MultithreadedAIScraper:
             elif ai_response.startswith("```"):
                 ai_response = ai_response.replace("```", "").strip()
             
-            analysis = json.loads(ai_response)
+            # Limpiar caracteres problemáticos
+            ai_response = ai_response.replace('\n', ' ').replace('\r', ' ')
+            
+            try:
+                analysis = json.loads(ai_response)
+            except json.JSONDecodeError as e:
+                print(f"❌ Error parsing AI response: {e}")
+                print(f"Response: {ai_response[:200]}...")
+                return {
+                    'confidence_score': 0.5,
+                    'reasoning': 'Error parsing AI response',
+                    'market_opinion': 'No analysis available',
+                    'recommendation': 'Manual review required',
+                    'resell_potential': 5
+                }
             
             # Enviar a ambos chats
             for chat_id, chat_name in [(TELEGRAM_CHAT_ID_HIGH, "Chat Excelentes"), (TELEGRAM_CHAT_ID_MEDIUM, "Chat Buenos")]:
