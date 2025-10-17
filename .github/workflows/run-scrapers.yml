@@ -32,7 +32,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install playwright
           playwright install chromium
-          playwright install-deps
+          playwright install-deps chromium
+      
+      - name: Verify Playwright installation
+        run: |
+          python -c "from playwright.sync_api import sync_playwright; print('Playwright installed successfully')"
       
       - name: Install dependencies
         run: |

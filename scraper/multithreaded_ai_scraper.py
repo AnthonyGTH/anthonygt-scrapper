@@ -549,8 +549,14 @@ class MultithreadedAIScraper:
                     'resell_potential': 5
                 }
             
-            # Enviar a ambos chats
-            for chat_id, chat_name in [(TELEGRAM_CHAT_ID_HIGH, "Chat Excelentes"), (TELEGRAM_CHAT_ID_MEDIUM, "Chat Buenos")]:
+        # Enviar a ambos chats (solo si están configurados)
+        chats_to_notify = []
+        if TELEGRAM_CHAT_ID_HIGH:
+            chats_to_notify.append((TELEGRAM_CHAT_ID_HIGH, "Chat Excelentes"))
+        if TELEGRAM_CHAT_ID_MEDIUM:
+            chats_to_notify.append((TELEGRAM_CHAT_ID_MEDIUM, "Chat Buenos"))
+        
+        for chat_id, chat_name in chats_to_notify:
                 message = f"""🤖 Resumen IA - Sistema Multihilo
 
 ✅ Estado: Sistema funcionando
