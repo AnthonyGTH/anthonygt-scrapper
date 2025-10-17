@@ -18,9 +18,9 @@ class ProductGenerator:
         openai.api_key = self.openai_api_key
         
     async def generate_resellable_products(self, count: int = 20) -> List[Dict[str, Any]]:
-        """Generar productos fáciles de revender usando IA"""
+        """Generate easy-to-resell products using AI"""
         try:
-            print(f"🤖 Generando {count} productos con IA OpenAI...")
+            print(f"🤖 Generating {count} products with OpenAI AI...")
             
             prompt = f"""
             Eres un experto en productos electrónicos y de tecnología que son fáciles de revender en México.
@@ -77,25 +77,25 @@ class ProductGenerator:
                 if self._validate_product_structure(product):
                     validated_products.append(product)
                 else:
-                    print(f"⚠️ Producto inválido omitido: {product}")
+                    print(f"⚠️ Invalid product omitted: {product}")
             
-            print(f"✅ {len(validated_products)} productos generados exitosamente")
+            print(f"✅ {len(validated_products)} products generated successfully")
             
-            # Guardar productos generados
+            # Save generated products
             await self._save_generated_products(validated_products)
             
             return validated_products
             
         except json.JSONDecodeError as e:
-            print(f"❌ Error parseando JSON de IA: {e}")
-            print(f"Respuesta recibida: {ai_response}")
+            print(f"❌ Error parsing AI JSON: {e}")
+            print(f"Response received: {ai_response}")
             return await self._get_fallback_products(count)
         except Exception as e:
-            print(f"❌ Error generando productos con IA: {e}")
+            print(f"❌ Error generating products with AI: {e}")
             return await self._get_fallback_products(count)
     
     def _validate_product_structure(self, product: Dict[str, Any]) -> bool:
-        """Validar estructura del producto"""
+        """Validate product structure"""
         required_fields = [
             'nombre_exacto', 'categoria', 'marca', 'precio_estimado', 
             'facilidad_reventa', 'demanda', 'keywords_busqueda'
@@ -115,9 +115,9 @@ class ProductGenerator:
         return True
     
     async def _save_generated_products(self, products: List[Dict[str, Any]]):
-        """Guardar productos generados en archivo"""
+        """Save generated products to file"""
         try:
-            # Crear directorio si no existe
+            # Create directory if it doesn't exist
             os.makedirs("scraper", exist_ok=True)
             
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -126,13 +126,13 @@ class ProductGenerator:
             with open(filename, 'w', encoding='utf-8') as f:
                 json.dump(products, f, indent=2, ensure_ascii=False)
             
-            print(f"💾 Productos guardados en: {filename}")
+            print(f"💾 Products saved in: {filename}")
         except Exception as e:
-            print(f"⚠️ Error guardando productos: {e}")
+            print(f"⚠️ Error saving products: {e}")
     
     async def _get_fallback_products(self, count: int) -> List[Dict[str, Any]]:
-        """Productos de respaldo si falla la IA"""
-        print("🔄 Usando productos de respaldo...")
+        """Fallback products if AI fails"""
+        print("🔄 Using fallback products...")
         
         fallback_products = [
             {

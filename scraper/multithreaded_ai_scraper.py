@@ -64,7 +64,7 @@ class MultithreadedAIScraper:
         self.max_workers = 5  # Número de hilos paralelos
     
     async def generate_ai_products(self) -> List[Dict[str, Any]]:
-        """Generar 20 productos con IA"""
+        """Generate 20 products with AI"""
         try:
             print("🤖 Generando 20 productos con IA OpenAI...")
             
@@ -142,7 +142,7 @@ class MultithreadedAIScraper:
     async def scrape_amazon_advanced(self, page, product_name: str, keywords: str) -> List[Dict[str, Any]]:
         """Scraper avanzado para Amazon"""
         try:
-            print(f"🛒 Scrapeando {product_name} en Amazon (multihilo)...")
+            print(f"🛒 Scraping {product_name} on Amazon (multithreaded)...")
             
             search_query = keywords.replace(' ', '+')
             search_url = f"https://www.amazon.com.mx/s?k={search_query}&ref=sr_pg_1"
@@ -166,7 +166,7 @@ class MultithreadedAIScraper:
                 try:
                     elements = await page.query_selector_all(selector)
                     if elements:
-                        print(f"📦 Productos encontrados con selector {selector}: {len(elements)}")
+                        print(f"📦 Products found with selector {selector}: {len(elements)}")
                         
                         for element in elements[:3]:  # Limitar a 3 productos por selector
                             try:
@@ -250,17 +250,17 @@ class MultithreadedAIScraper:
                 except Exception as e:
                     continue
             
-            print(f"✅ Amazon: {len(products)} resultados")
+            print(f"✅ Amazon: {len(products)} results")
             return products
             
         except Exception as e:
-            print(f"❌ Error en Amazon: {e}")
+            print(f"❌ Error on Amazon: {e}")
             return []
     
     async def scrape_mercadolibre_advanced(self, page, product_name: str, keywords: str) -> List[Dict[str, Any]]:
         """Scraper avanzado para MercadoLibre"""
         try:
-            print(f"🛒 Scrapeando {product_name} en MercadoLibre (multihilo)...")
+            print(f"🛒 Scraping {product_name} on MercadoLibre (multithreaded)...")
             
             search_query = keywords.replace(' ', '%20')
             search_url = f"https://listado.mercadolibre.com.mx/{search_query}"
@@ -284,7 +284,7 @@ class MultithreadedAIScraper:
                 try:
                     elements = await page.query_selector_all(selector)
                     if elements:
-                        print(f"📦 Productos encontrados con selector {selector}: {len(elements)}")
+                        print(f"📦 Products found with selector {selector}: {len(elements)}")
                         
                         for element in elements[:3]:
                             try:
@@ -365,11 +365,11 @@ class MultithreadedAIScraper:
                 except Exception as e:
                     continue
             
-            print(f"✅ MercadoLibre: {len(products)} resultados")
+            print(f"✅ MercadoLibre: {len(products)} results")
             return products
             
         except Exception as e:
-            print(f"❌ Error en MercadoLibre: {e}")
+            print(f"❌ Error on MercadoLibre: {e}")
             return []
     
     async def analyze_deal_with_ai(self, product_data: Dict[str, Any]) -> Dict[str, Any]:
@@ -482,13 +482,13 @@ class MultithreadedAIScraper:
             response = requests.post(url, data=data, timeout=10)
             
             if response.status_code == 200:
-                print(f"✅ Notificación {discount_type} enviada con análisis IA")
+                print(f"✅ {discount_type} notification sent with AI analysis")
                 self.notifications_sent += 1
             else:
-                print(f"❌ Error enviando notificación {discount_type}: {response.status_code}")
+                print(f"❌ Error sending {discount_type} notification: {response.status_code}")
                 
         except Exception as e:
-            print(f"❌ Error en notificación {discount_type}: {e}")
+            print(f"❌ Error in {discount_type} notification: {e}")
     
     async def send_summary_with_ai(self):
         """Enviar resumen con análisis IA"""
@@ -549,7 +549,7 @@ class MultithreadedAIScraper:
                     'resell_potential': 5
                 }
             
-        # Enviar a ambos chats (solo si están configurados)
+        # Send to both chats (only if configured)
         chats_to_notify = []
         if TELEGRAM_CHAT_ID_HIGH:
             chats_to_notify.append((TELEGRAM_CHAT_ID_HIGH, "Chat Excelentes"))
@@ -557,7 +557,7 @@ class MultithreadedAIScraper:
             chats_to_notify.append((TELEGRAM_CHAT_ID_MEDIUM, "Chat Buenos"))
         
         for chat_id, chat_name in chats_to_notify:
-                message = f"""🤖 Resumen IA - Sistema Multihilo
+            message = f"""🤖 Resumen IA - Sistema Multihilo
 
 ✅ Estado: Sistema funcionando
 📊 Productos revisados: {total_products}
@@ -569,28 +569,28 @@ class MultithreadedAIScraper:
 📈 Tendencias: {analysis.get('trends', 'Sin tendencias')}
 🔄 Recomendaciones: {analysis.get('recommendations', 'Sin recomendaciones')}
 🎯 Próximos pasos: {analysis.get('next_steps', 'Continuar monitoreo')}"""
-                
-                url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-                data = {
-                    'chat_id': chat_id,
-                    'text': message,
-                    'parse_mode': 'HTML'
-                }
-                
-                response = requests.post(url, data=data, timeout=10)
-                
-                if response.status_code == 200:
-                    print(f"✅ Resumen enviado a {chat_name}")
-                else:
-                    print(f"❌ Error enviando resumen a {chat_name}: {response.status_code}")
+            
+            url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+            data = {
+                'chat_id': chat_id,
+                'text': message,
+                'parse_mode': 'HTML'
+            }
+            
+            response = requests.post(url, data=data, timeout=10)
+            
+            if response.status_code == 200:
+                print(f"✅ Summary sent to {chat_name}")
+            else:
+                print(f"❌ Error sending summary to {chat_name}: {response.status_code}")
                 
         except Exception as e:
-            print(f"❌ Error en resumen IA: {e}")
+            print(f"❌ Error in AI summary: {e}")
     
     async def scrape_product_worker(self, product: Dict[str, Any], worker_id: int):
-        """Worker para scraping de un producto (multihilo)"""
+        """Worker for scraping a product (multithreaded)"""
         try:
-            print(f"🔄 Worker {worker_id}: Procesando {product['nombre_exacto']}")
+            print(f"🔄 Worker {worker_id}: Processing {product['nombre_exacto']}")
             
             async with async_playwright() as playwright:
                 browser, context = await self.create_stealth_browser(playwright)
@@ -660,19 +660,19 @@ class MultithreadedAIScraper:
                     await browser.close()
                     
         except Exception as e:
-            print(f"❌ Error en worker {worker_id}: {e}")
+            print(f"❌ Error in worker {worker_id}: {e}")
     
     async def run_multithreaded_scraping(self):
-        """Ejecutar scraping multihilo con 20 productos IA"""
-        print("🚀 === SISTEMA MULTIHILO CON 20 PRODUCTOS IA ===")
-        print(f"⏰ Ejecutado: {self.execution_time.strftime('%Y-%m-%d %H:%M:%S')}")
-        print(f"🧵 Workers paralelos: {self.max_workers}")
+        """Execute multithreaded scraping with 20 AI products"""
+        print("🚀 === MULTITHREADED SYSTEM WITH 20 AI PRODUCTS ===")
+        print(f"⏰ Executed: {self.execution_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        print(f"🧵 Parallel workers: {self.max_workers}")
         
-        # Generar productos con IA
+        # Generate products with AI
         self.ai_products = await self.generate_ai_products()
-        print(f"🎯 Productos objetivo: {len(self.ai_products)}")
+        print(f"🎯 Target products: {len(self.ai_products)}")
         
-        # Crear tareas asíncronas para multihilo
+        # Create async tasks for multithreading
         tasks = []
         for i, product in enumerate(self.ai_products):
             task = asyncio.create_task(
@@ -680,20 +680,20 @@ class MultithreadedAIScraper:
             )
             tasks.append(task)
         
-        # Ejecutar todas las tareas en paralelo
-        print(f"🚀 Iniciando {len(tasks)} workers en paralelo...")
+        # Execute all tasks in parallel
+        print(f"🚀 Starting {len(tasks)} workers in parallel...")
         await asyncio.gather(*tasks, return_exceptions=True)
         
         # Enviar resumen con IA
         await self.send_summary_with_ai()
         
-        print(f"\n📊 === RESUMEN FINAL MULTIHILO ===")
-        print(f"✅ Productos revisados: {len(self.ai_products)}")
-        print(f"🔥 Ofertas excelentes >50%: {len(self.high_discount_deals)}")
-        print(f"💰 Ofertas buenas 20-50%: {len(self.medium_discount_deals)}")
-        print(f"🧠 Análisis IA: {len(self.high_discount_deals) + len(self.medium_discount_deals)}")
-        print(f"📱 Notificaciones enviadas: {self.notifications_sent}")
-        print(f"🎉 ¡Sistema multihilo con 20 productos IA ejecutado exitosamente!")
+        print(f"\n📊 === FINAL MULTITHREADED SUMMARY ===")
+        print(f"✅ Products reviewed: {len(self.ai_products)}")
+        print(f"🔥 Excellent deals >50%: {len(self.high_discount_deals)}")
+        print(f"💰 Good deals 20-50%: {len(self.medium_discount_deals)}")
+        print(f"🧠 AI Analysis: {len(self.high_discount_deals) + len(self.medium_discount_deals)}")
+        print(f"📱 Notifications sent: {self.notifications_sent}")
+        print(f"🎉 Multithreaded system with 20 AI products executed successfully!")
 
 async def main():
     """Función principal"""
