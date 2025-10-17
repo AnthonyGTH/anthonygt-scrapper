@@ -413,7 +413,7 @@ class MultithreadedAIScraper:
                 ai_response = ai_response.replace("```", "").strip()
             
             # Limpiar caracteres problemáticos
-            ai_response = ai_response.replace('\n', ' ').replace('\r', ' ')
+            ai_response = ai_response.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
             
             try:
                 analysis = json.loads(ai_response)
@@ -534,7 +534,7 @@ class MultithreadedAIScraper:
                 ai_response = ai_response.replace("```", "").strip()
             
             # Limpiar caracteres problemáticos
-            ai_response = ai_response.replace('\n', ' ').replace('\r', ' ')
+            ai_response = ai_response.replace('\n', ' ').replace('\r', ' ').replace('\t', ' ')
             
             try:
                 analysis = json.loads(ai_response)
