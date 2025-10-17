@@ -1,9 +1,11 @@
 name: Run Scrapers
 
 on:
+  push:
+    branches: [ master ]
   schedule:
-    # Run every 10 minutes
-    - cron: "*/10 * * * *"
+    # Run every hour (GitHub free tier limitation)
+    - cron: "0 * * * *"
   workflow_dispatch:
     inputs:
       force_run:
