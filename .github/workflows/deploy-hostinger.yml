@@ -41,8 +41,14 @@ jobs:
         local-dir: web/angular/dist/price-monitoring-web/
         server-dir: ${{ secrets.HOSTINGER_DEPLOY_PATH }}/
         log-level: verbose
+        exclude: |
+          **/.git*
+          **/.git*/**
+          **/node_modules/**
+          **/.DS_Store
+          **/Thumbs.db
         
-    - name: Deploy .htaccess for Angular routing
+    - name: Generate .htaccess for Angular routing
       run: |
         echo "RewriteEngine On" > web/angular/dist/price-monitoring-web/.htaccess
         echo "RewriteCond %{REQUEST_FILENAME} !-f" >> web/angular/dist/price-monitoring-web/.htaccess
