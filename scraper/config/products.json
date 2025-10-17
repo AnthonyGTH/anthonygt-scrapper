@@ -1,0 +1,28 @@
+{
+  "products": [
+    {
+      "name": "iPhone 15 Pro",
+      "urls": {
+        "amazon_mx": "https://www.amazon.com.mx/dp/B0CHX1W1XY",
+        "mercadolibre": "https://articulo.mercadolibre.com.mx/MLM-123456789",
+        "walmart_mx": "https://www.walmart.com.mx/ip/iphone-15-pro",
+        "liverpool": "https://www.liverpool.com.mx/tienda/pdp/iphone-15-pro"
+      },
+      "category": "electronics",
+      "reference_price": 25000,
+      "sku": "IPHONE15PRO"
+    },
+    {
+      "name": "MacBook Air M2",
+      "urls": {
+        "amazon_mx": "https://www.amazon.com.mx/dp/B0B3C2Q5XY",
+        "mercadolibre": "https://articulo.mercadolibre.com.mx/MLM-987654321",
+        "walmart_mx": "https://www.walmart.com.mx/ip/macbook-air-m2",
+        "liverpool": "https://www.liverpool.com.mx/tienda/pdp/macbook-air-m2"
+      },
+      "category": "electronics",
+      "reference_price": 35000,
+      "sku": "MACBOOKAIRM2"
+    }
+  ]
+}
