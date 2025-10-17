@@ -251,6 +251,8 @@ class MultithreadedAIScraper:
                     continue
             
             print(f"✅ Amazon: {len(products)} results")
+            if products:
+                print(f"📦 Found products: {[p['name'][:50] + '...' if len(p['name']) > 50 else p['name'] for p in products[:3]]}")
             return products
             
         except Exception as e:
@@ -366,6 +368,8 @@ class MultithreadedAIScraper:
                     continue
             
             print(f"✅ MercadoLibre: {len(products)} results")
+            if products:
+                print(f"📦 Found products: {[p['name'][:50] + '...' if len(p['name']) > 50 else p['name'] for p in products[:3]]}")
             return products
             
         except Exception as e:
@@ -587,6 +591,45 @@ class MultithreadedAIScraper:
         except Exception as e:
             print(f"❌ Error in AI summary: {e}")
     
+    async def send_no_deals_notification(self):
+        """Enviar notificación simple cuando no hay ofertas"""
+        try:
+            message = f"""🤖 Sistema de Scraping - Sin Ofertas
+
+✅ Estado: Sistema funcionando correctamente
+📊 Productos revisados: {len(self.ai_products)}
+🎯 Ofertas encontradas: 0
+⏰ Ejecutado: {self.execution_time.strftime('%H:%M:%S')}
+
+💡 No se encontraron ofertas con descuento >20%
+🔄 Próxima ejecución: En 1 hora
+📱 Sistema monitoreando continuamente"""
+            
+            # Enviar a ambos chats si están configurados
+            chats_to_notify = []
+            if TELEGRAM_CHAT_ID_HIGH:
+                chats_to_notify.append((TELEGRAM_CHAT_ID_HIGH, "Chat Excelentes"))
+            if TELEGRAM_CHAT_ID_MEDIUM:
+                chats_to_notify.append((TELEGRAM_CHAT_ID_MEDIUM, "Chat Buenos"))
+            
+            for chat_id, chat_name in chats_to_notify:
+                url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+                data = {
+                    'chat_id': chat_id,
+                    'text': message,
+                    'parse_mode': 'HTML'
+                }
+                
+                response = requests.post(url, data=data, timeout=10)
+                
+                if response.status_code == 200:
+                    print(f"✅ No deals notification sent to {chat_name}")
+                else:
+                    print(f"❌ Error sending no deals notification to {chat_name}: {response.status_code}")
+                    
+        except Exception as e:
+            print(f"❌ Error sending no deals notification: {e}")
+    
     async def scrape_product_worker(self, product: Dict[str, Any], worker_id: int):
         """Worker for scraping a product (multithreaded)"""
         try:
@@ -613,6 +656,7 @@ class MultithreadedAIScraper:
                     
                     # Procesar resultados
                     all_results = amazon_results + mercadolibre_results
+                    print(f"📊 Worker {worker_id}: Found {len(all_results)} total products")
                     
                     for result in all_results:
                         try:
@@ -623,6 +667,8 @@ class MultithreadedAIScraper:
                             # Calcular descuento
                             estimated_price = product.get('precio_estimado', 10000)
                             discount = ((estimated_price - price_value) / estimated_price) * 100
+                            
+                            print(f"💰 Worker {worker_id}: Found {result['name'][:30]}... - Price: {result['price']} - Discount: {discount:.1f}%")
                             
                             if discount >= 20:  # Solo ofertas >=20% descuento
                                 deal_data = {
@@ -639,6 +685,7 @@ class MultithreadedAIScraper:
                                 
                                 # Clasificar por tipo de descuento
                                 if discount > 50:
+                                    print(f"🔥 Worker {worker_id}: EXCELLENT DEAL >50% - {result['name'][:30]}... - {discount:.1f}% off")
                                     self.high_discount_deals.append(deal_data)
                                     if ai_analysis['confidence_score'] >= 0.65:
                                         await self.send_telegram_notification(
@@ -646,6 +693,7 @@ class MultithreadedAIScraper:
                                             TELEGRAM_CHAT_ID_HIGH, "high"
                                         )
                                 elif discount >= 20:
+                                    print(f"💰 Worker {worker_id}: GOOD DEAL 20-50% - {result['name'][:30]}... - {discount:.1f}% off")
                                     self.medium_discount_deals.append(deal_data)
                                     if ai_analysis['confidence_score'] >= 0.6:
                                         await self.send_telegram_notification(
@@ -686,6 +734,10 @@ class MultithreadedAIScraper:
         
         # Enviar resumen con IA
         await self.send_summary_with_ai()
+        
+        # Enviar notificación simple si no hay ofertas
+        if len(self.high_discount_deals) == 0 and len(self.medium_discount_deals) == 0:
+            await self.send_no_deals_notification()
         
         print(f"\n📊 === FINAL MULTITHREADED SUMMARY ===")
         print(f"✅ Products reviewed: {len(self.ai_products)}")
