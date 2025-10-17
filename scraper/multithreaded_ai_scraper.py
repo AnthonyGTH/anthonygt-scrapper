@@ -144,7 +144,7 @@ class MultithreadedAIScraper:
         try:
             print(f"🛒 Scraping {product_name} on Amazon (multithreaded)...")
             
-            search_query = keywords.replace(' ', '+')
+            search_query = str(keywords).replace(' ', '+')
             search_url = f"https://www.amazon.com.mx/s?k={search_query}&ref=sr_pg_1"
             
             await page.goto(search_url, wait_until='domcontentloaded', timeout=15000)
@@ -262,7 +262,7 @@ class MultithreadedAIScraper:
         try:
             print(f"🛒 Scraping {product_name} on MercadoLibre (multithreaded)...")
             
-            search_query = keywords.replace(' ', '%20')
+            search_query = str(keywords).replace(' ', '%20')
             search_url = f"https://listado.mercadolibre.com.mx/{search_query}"
             
             await page.goto(search_url, wait_until='domcontentloaded', timeout=15000)
