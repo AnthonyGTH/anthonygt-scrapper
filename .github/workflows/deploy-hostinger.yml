@@ -37,8 +37,10 @@ jobs:
         username: ${{ secrets.HOSTINGER_FTP_USER }}
         password: ${{ secrets.HOSTINGER_FTP_PASS }}
         port: ${{ secrets.HOSTINGER_FTP_PORT }}
+        protocol: ftp
         local-dir: web/angular/dist/
         server-dir: ${{ secrets.HOSTINGER_DEPLOY_PATH }}/
+        log-level: verbose
         
     - name: Deploy .htaccess for Angular routing
       run: |
