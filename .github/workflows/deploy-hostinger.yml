@@ -38,23 +38,13 @@ jobs:
         password: ${{ secrets.HOSTINGER_FTP_PASS }}
         port: ${{ secrets.HOSTINGER_FTP_PORT }}
         protocol: ftp
-        local-dir: web/angular/dist/
+        local-dir: web/angular/dist/price-monitoring-web/
         server-dir: ${{ secrets.HOSTINGER_DEPLOY_PATH }}/
         log-level: verbose
         
     - name: Deploy .htaccess for Angular routing
       run: |
-        echo "RewriteEngine On" > .htaccess
-        echo "RewriteCond %{REQUEST_FILENAME} !-f" >> .htaccess
-        echo "RewriteCond %{REQUEST_FILENAME} !-d" >> .htaccess
-        echo "RewriteRule . /index.html [L]" >> .htaccess
-        
-    - name: Upload .htaccess
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-      with:
-        server: ${{ secrets.HOSTINGER_FTP_HOST }}
-        username: ${{ secrets.HOSTINGER_FTP_USER }}
-        password: ${{ secrets.HOSTINGER_FTP_PASS }}
-        port: ${{ secrets.HOSTINGER_FTP_PORT }}
-        local-dir: .htaccess
-        server-dir: ${{ secrets.HOSTINGER_DEPLOY_PATH }}/
+        echo "RewriteEngine On" > web/angular/dist/price-monitoring-web/.htaccess
+        echo "RewriteCond %{REQUEST_FILENAME} !-f" >> web/angular/dist/price-monitoring-web/.htaccess
+        echo "RewriteCond %{REQUEST_FILENAME} !-d" >> web/angular/dist/price-monitoring-web/.htaccess
+        echo "RewriteRule . /index.html [L]" >> web/angular/dist/price-monitoring-web/.htaccess
