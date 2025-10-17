@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from api.models import Product, Price, Deal
+from models import Product, Price, Deal
+from main import get_db
 from sqlalchemy import func
 from datetime import datetime, timedelta
 

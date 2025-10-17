@@ -2,54 +2,60 @@ name: Deploy to Hostinger
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
       
-    - name: Set up Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: web/angular/package-lock.json
-        
-    - name: Install dependencies
-      run: |
-        cd web/angular
-        npm ci --prefer-offline --no-audit
-        
-    - name: Build Angular app
-      run: |
-        cd web/angular
-        npm run build:prod
-        
-    - name: Deploy to Hostinger
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-      with:
-        server: ${{ secrets.HOSTINGER_FTP_HOST }}
-        username: ${{ secrets.HOSTINGER_FTP_USER }}
-        password: ${{ secrets.HOSTINGER_FTP_PASS }}
-        port: ${{ secrets.HOSTINGER_FTP_PORT }}
-        protocol: ftp
-        local-dir: web/angular/dist/price-monitoring-web/
-        log-level: verbose
-        exclude: |
-          **/.git*
-          **/.git*/**
-          **/node_modules/**
-          **/.DS_Store
-          **/Thumbs.db
-        
-    - name: Generate .htaccess for Angular routing
-      run: |
-        echo "RewriteEngine On" > web/angular/dist/price-monitoring-web/.htaccess
-        echo "RewriteCond %{REQUEST_FILENAME} !-f" >> web/angular/dist/price-monitoring-web/.htaccess
-        echo "RewriteCond %{REQUEST_FILENAME} !-d" >> web/angular/dist/price-monitoring-web/.htaccess
-        echo "RewriteRule . /index.html [L]" >> web/angular/dist/price-monitoring-web/.htaccess
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: 'npm'
+          cache-dependency-path: web/angular/package-lock.json
+      
+      - name: Install Angular dependencies
+        run: |
+          cd web/angular
+          npm ci
+      
+      - name: Build Angular for production
+        run: |
+          cd web/angular
+          npm run build -- --configuration=production
+      
+      - name: Deploy to Hostinger via FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.HOSTINGER_FTP_HOST }}
+          username: ${{ secrets.HOSTINGER_FTP_USER }}
+          password: ${{ secrets.HOSTINGER_FTP_PASS }}
+          port: ${{ secrets.HOSTINGER_FTP_PORT }}
+          local-dir: web/angular/dist/
+          server-dir: ${{ secrets.HOSTINGER_DEPLOY_PATH }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.DS_Store
+            **/Thumbs.db
+      
+      - name: Notify deployment success
+        run: |
+          echo "✅ Deployment completed successfully!"
+          echo "🌐 Website: http://anthonygt-scrappers.com.mx/"
+          echo "📅 Deployed at: $(date)"

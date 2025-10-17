@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import desc, and_
-from api.models import Deal, Product, Price
+from models import Deal, Product, Price
+from main import get_db
 from typing import List, Optional
 from datetime import datetime, timedelta
 

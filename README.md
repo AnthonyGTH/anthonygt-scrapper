@@ -1,143 +1,169 @@
-# Intelligent Price Monitoring System
+# 🚀 Sistema de Monitoreo de Precios con IA
 
-A comprehensive price monitoring system that scrapes e-commerce sites, analyzes prices with AI, and sends notifications via Telegram.
+Sistema avanzado de scraping multihilo que monitorea ofertas en e-commerce mexicanos, analiza precios con IA y envía notificaciones inteligentes a Telegram.
 
-## Architecture
+## ✨ Características
 
+- **🤖 Análisis con IA**: OpenAI GPT-4o-mini para análisis inteligente de ofertas
+- **🧵 Scraping Multihilo**: 20 productos procesados en paralelo
+- **📱 Múltiples Chats**: Clasificación automática por tipo de descuento
+- **🛡️ Anti-Detección**: Técnicas avanzadas para evitar bloqueos
+- **⚡ Automatización**: GitHub Actions cada 10 minutos
+- **🌐 API REST**: FastAPI con autenticación JWT
+- **💻 Frontend**: Panel Angular con dashboard
+
+## 🎯 Sitios Monitoreados
+
+- Amazon México
+- MercadoLibre México
+- Walmart México
+- Liverpool México
+- Best Buy México
+
+## 📊 Clasificación de Ofertas
+
+- **🔥 Excelentes** (>50% descuento): Chat de ofertas premium
+- **💰 Buenas** (20-50% descuento): Chat de ofertas regulares
+
+## 🚀 Instalación
+
+### Prerrequisitos
+
+- Python 3.11+
+- Node.js 18+
+- PostgreSQL
+- Cuenta de OpenAI
+- Bot de Telegram
+
+### Configuración
+
+1. **Clona el repositorio:**
+```bash
+git clone https://github.com/tu-usuario/price-monitoring-system.git
+cd price-monitoring-system
 ```
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   Scrapers      │    │   AI Analysis   │    │   Telegram      │
-│   (Playwright)  │───▶│   (OpenAI)      │───▶│   Notifications │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-         │                       │                       │
-         ▼                       ▼                       ▼
-┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│   MySQL DB      │    │   FastAPI      │    │   Angular Web    │
-│   (Hostinger)   │◀───│   Backend      │◀───│   Dashboard      │
-└─────────────────┘    └─────────────────┘    └─────────────────┘
-```
 
-## Features
-
-- **Multi-site scraping**: Amazon MX, MercadoLibre, Walmart, Liverpool
-- **AI-powered analysis**: OpenAI GPT-4o-mini for price anomaly detection
-- **Real-time notifications**: Telegram bot with rate limiting
-- **Web dashboard**: Angular 17+ with authentication
-- **Automated deployment**: GitHub Actions + Hostinger FTP
-- **Database**: MySQL with Alembic migrations
-
-## Setup
-
-### 1. Environment Configuration
-
-Copy `env.example` to `.env` and configure your credentials:
-
+2. **Configura variables de entorno:**
 ```bash
 cp env.example .env
+# Edita .env con tus credenciales
 ```
 
-### 2. Database Setup
-
+3. **Instala dependencias:**
 ```bash
-cd infra
-docker-compose up -d
-```
+# Backend
+pip install -r api/requirements.txt
+pip install -r scraper/requirements.txt
 
-### 3. Install Dependencies
-
-```bash
-# API
-cd api
-pip install -r requirements.txt
-
-# Scraper
-cd ../scraper
-pip install -r requirements.txt
-
-# Web
-cd ../web/angular
+# Frontend
+cd frontend
 npm install
 ```
 
-### 4. Run Migrations
-
+4. **Configura base de datos:**
 ```bash
-cd infra
-alembic upgrade head
+# Crear usuario admin
+python api/scripts/create_admin.py
 ```
 
-### 5. Create Admin User
+## 🔧 Configuración de GitHub Secrets
+
+Configura estos secrets en GitHub Actions:
+
+- `POSTGRES_HOST`: Host de PostgreSQL
+- `POSTGRES_PORT`: Puerto (5432)
+- `POSTGRES_DB`: Nombre de la base de datos
+- `POSTGRES_USER`: Usuario de PostgreSQL
+- `POSTGRES_PASSWORD`: Contraseña de PostgreSQL
+- `TELEGRAM_BOT_TOKEN`: Token de tu bot
+- `TELEGRAM_CHAT_ID`: Chat principal
+- `TELEGRAM_CHAT_ID_HIGH`: Chat para ofertas >50%
+- `TELEGRAM_CHAT_ID_MEDIUM`: Chat para ofertas 20-50%
+- `OPENAI_API_KEY`: API key de OpenAI
+- `API_JWT_SECRET`: Clave secreta JWT
+
+## 🏃‍♂️ Uso
+
+### Ejecutar Scrapers Localmente
+
+```bash
+# Sistema multihilo con 20 productos IA
+python scraper/multithreaded_ai_scraper.py
+
+# Sistema avanzado con técnicas anti-detección
+python scraper/advanced_stealth_scraper.py
+```
+
+### Ejecutar API
 
 ```bash
 cd api
-python scripts/create_admin.py
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-## Deployment
-
-### GitHub Secrets Required
-
-Configure these secrets in your GitHub repository:
-
-- `POSTGRES_HOST`
-- `POSTGRES_PORT`
-- `POSTGRES_DB`
-- `POSTGRES_USER`
-- `POSTGRES_PASSWORD`
-- `TELEGRAM_BOT_TOKEN`
-- `TELEGRAM_CHAT_ID`
-- `OPENAI_API_KEY`
-- `API_JWT_SECRET`
-- `HOSTINGER_FTP_HOST`
-- `HOSTINGER_FTP_USER`
-- `HOSTINGER_FTP_PASS`
-- `HOSTINGER_FTP_PORT`
-- `HOSTINGER_DEPLOY_PATH`
-
-### Automated Deployment
-
-The system includes GitHub Actions workflows for:
-
-- **Scraper execution**: Runs every 2 hours
-- **Angular deployment**: Deploys to Hostinger via FTP
-
-## Usage
-
-### Manual Scraper Execution
+### Ejecutar Frontend
 
 ```bash
-cd scraper
-python run-all.py
+cd frontend
+ng serve
 ```
 
-### API Endpoints
+## 📁 Estructura del Proyecto
 
-- `GET /health` - System health check
-- `GET /deals` - List all deals
-- `GET /deals/{id}` - Deal details
-- `POST /auth/login` - Authentication
-- `POST /ai/analyze-deal` - AI analysis
+```
+price-monitoring-system/
+├── api/                    # Backend FastAPI
+│   ├── routes/            # Endpoints de la API
+│   ├── models.py          # Modelos de base de datos
+│   └── scripts/           # Scripts de utilidad
+├── scraper/               # Sistema de scraping
+│   ├── ai/                # Análisis con IA
+│   ├── sites/             # Scrapers por sitio
+│   └── notifier/          # Notificaciones
+├── frontend/              # Panel Angular
+├── infra/                 # Docker y configuración
+└── .github/workflows/     # GitHub Actions
+```
 
-### Web Dashboard
+## 🔄 Automatización
 
-Access the Angular dashboard at your Hostinger domain after deployment.
+El sistema se ejecuta automáticamente cada 10 minutos via GitHub Actions:
 
-## Security
+- **Scraping**: 20 productos generados por IA
+- **Análisis**: IA analiza cada oferta
+- **Notificaciones**: Envío automático a chats correspondientes
+- **Resúmenes**: Análisis de mercado con IA
 
-- All credentials stored in GitHub Secrets
-- JWT authentication for API access
-- Rate limiting on Telegram notifications
-- SQL injection prevention via SQLAlchemy
-- CORS configuration for web security
+## 🛡️ Seguridad
 
-## Contributing
+- Variables de entorno para credenciales
+- Autenticación JWT en API
+- Técnicas anti-detección en scraping
+- Rate limiting en notificaciones
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
+## 📈 Monitoreo
 
-## License
+- Logs estructurados en JSON
+- Métricas de scraping y IA
+- Health checks automáticos
+- Dashboard de ofertas
 
-MIT License
+## 🤝 Contribuir
+
+1. Fork el proyecto
+2. Crea una rama para tu feature
+3. Commit tus cambios
+4. Push a la rama
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia MIT.
+
+## 🆘 Soporte
+
+Para soporte, abre un issue en GitHub o contacta al desarrollador.
+
+---
+
+**¡Sistema de monitoreo de precios con IA - Encuentra las mejores ofertas automáticamente!** 🎯

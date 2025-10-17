@@ -1,0 +1,625 @@
+#!/usr/bin/env python3
+"""
+Sistema de scraping con 20 productos generados por IA
+"""
+
+import asyncio
+import json
+import os
+import sys
+import random
+import time
+from datetime import datetime
+from typing import List, Dict, Any, Optional
+from playwright.async_api import async_playwright
+import openai
+import requests
+
+# Agregar path para imports
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Importar generador de productos
+from scraper.ai.product_generator import ProductGenerator
+
+# Configuración - Usar variables de entorno
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+class AI20ProductsScraper:
+    """Scraper con 20 productos generados por IA"""
+    
+    def __init__(self):
+        self.user_agents = [
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/121.0',
+            'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.1 Safari/605.1.15'
+        ]
+        
+        self.viewports = [
+            {'width': 1920, 'height': 1080},
+            {'width': 1366, 'height': 768},
+            {'width': 1440, 'height': 900},
+            {'width': 1536, 'height': 864},
+            {'width': 1280, 'height': 720}
+        ]
+        
+        self.real_deals = []
+        self.notifications_sent = 0
+        self.execution_time = datetime.now()
+        self.ai_products = []
+        
+        # Configurar OpenAI
+        openai.api_key = OPENAI_API_KEY
+    
+    async def generate_ai_products(self) -> List[Dict[str, Any]]:
+        """Generar 20 productos con IA"""
+        try:
+            print("🤖 Generando 20 productos con IA OpenAI...")
+            
+            generator = ProductGenerator()
+            products = await generator.generate_resellable_products(20)
+            
+            print(f"✅ {len(products)} productos generados por IA")
+            return products
+            
+        except Exception as e:
+            print(f"❌ Error generando productos con IA: {e}")
+            return await self._get_fallback_products()
+    
+    async def _get_fallback_products(self) -> List[Dict[str, Any]]:
+        """Productos de respaldo si falla la IA"""
+        print("🔄 Usando productos de respaldo...")
+        
+        fallback = [
+            {"nombre_exacto": "iPhone 15 Pro 128GB", "keywords_busqueda": "iPhone 15 Pro 128GB", "categoria": "Celular", "marca": "Apple", "precio_estimado": 25000, "facilidad_reventa": 10, "demanda": "Alta"},
+            {"nombre_exacto": "PlayStation 5", "keywords_busqueda": "PlayStation 5 PS5", "categoria": "Consola", "marca": "Sony", "precio_estimado": 12000, "facilidad_reventa": 9, "demanda": "Alta"},
+            {"nombre_exacto": "AirPods Pro 2da generación", "keywords_busqueda": "AirPods Pro 2da generación", "categoria": "Audífonos", "marca": "Apple", "precio_estimado": 5000, "facilidad_reventa": 8, "demanda": "Alta"},
+            {"nombre_exacto": "MacBook Air M2 13 pulgadas", "keywords_busqueda": "MacBook Air M2 13", "categoria": "Laptop", "marca": "Apple", "precio_estimado": 25000, "facilidad_reventa": 9, "demanda": "Alta"},
+            {"nombre_exacto": "Samsung Galaxy S24 Ultra", "keywords_busqueda": "Samsung Galaxy S24 Ultra", "categoria": "Celular", "marca": "Samsung", "precio_estimado": 30000, "facilidad_reventa": 8, "demanda": "Alta"}
+        ]
+        
+        return fallback
+    
+    async def create_stealth_browser(self, playwright):
+        """Crear navegador con configuración anti-detección"""
+        user_agent = random.choice(self.user_agents)
+        viewport = random.choice(self.viewports)
+        
+        browser = await playwright.chromium.launch(
+            headless=True,
+            args=[
+                '--no-sandbox',
+                '--disable-blink-features=AutomationControlled',
+                '--disable-web-security',
+                '--disable-features=VizDisplayCompositor',
+                '--disable-dev-shm-usage',
+                '--no-first-run',
+                '--disable-default-apps',
+                '--disable-extensions',
+                '--disable-plugins',
+                '--disable-images',
+                '--user-agent=' + user_agent
+            ]
+        )
+        
+        context = await browser.new_context(
+            user_agent=user_agent,
+            viewport=viewport,
+            locale='es-MX',
+            timezone_id='America/Mexico_City',
+            geolocation={'latitude': 19.4326, 'longitude': -99.1332},
+            permissions=['geolocation']
+        )
+        
+        await context.set_extra_http_headers({
+            'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+            'Accept-Language': 'es-MX,es;q=0.9,en;q=0.8',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'DNT': '1',
+            'Connection': 'keep-alive',
+            'Upgrade-Insecure-Requests': '1',
+        })
+        
+        return browser, context
+    
+    async def scrape_amazon_advanced(self, page, product_name: str, keywords: str) -> List[Dict[str, Any]]:
+        """Scraper avanzado para Amazon"""
+        try:
+            print(f"🛒 Scrapeando {product_name} en Amazon (modo avanzado)...")
+            
+            # Construir URL de búsqueda
+            search_query = keywords.replace(' ', '+')
+            search_url = f"https://www.amazon.com.mx/s?k={search_query}&ref=sr_pg_1"
+            
+            await page.goto(search_url, wait_until='networkidle', timeout=30000)
+            await page.wait_for_timeout(random.randint(1000, 3000))
+            
+            # Simular comportamiento humano
+            await page.evaluate(f"window.scrollTo(0, {random.randint(100, 800)})")
+            await page.wait_for_timeout(random.randint(500, 1500))
+            
+            # Múltiples selectores para productos
+            product_selectors = [
+                '[data-component-type="s-search-result"]',
+                '.s-result-item',
+                '[data-asin]'
+            ]
+            
+            products = []
+            for selector in product_selectors:
+                try:
+                    elements = await page.query_selector_all(selector)
+                    if elements:
+                        print(f"📦 Productos encontrados con selector {selector}: {len(elements)}")
+                        
+                        for element in elements[:5]:  # Limitar a 5 productos por selector
+                            try:
+                                # Título
+                                title_selectors = [
+                                    'h2 a span',
+                                    'h2 span',
+                                    '.s-size-mini span',
+                                    '[data-cy="title-recipe-title"]'
+                                ]
+                                
+                                title = None
+                                for title_sel in title_selectors:
+                                    try:
+                                        title_elem = await element.query_selector(title_sel)
+                                        if title_elem:
+                                            title = await title_elem.inner_text()
+                                            if title and len(title.strip()) > 10:
+                                                break
+                                    except:
+                                        continue
+                                
+                                if not title:
+                                    continue
+                                
+                                # Precio
+                                price_selectors = [
+                                    '.a-price-whole',
+                                    '.a-price .a-offscreen',
+                                    '.a-price-range',
+                                    '.a-price-symbol + span'
+                                ]
+                                
+                                price = None
+                                for price_sel in price_selectors:
+                                    try:
+                                        price_elem = await element.query_selector(price_sel)
+                                        if price_elem:
+                                            price_text = await price_elem.inner_text()
+                                            if price_text and '$' in price_text:
+                                                price = price_text
+                                                break
+                                    except:
+                                        continue
+                                
+                                # URL
+                                url_selectors = [
+                                    'h2 a',
+                                    'a[href*="/dp/"]',
+                                    'a[href*="/gp/product/"]'
+                                ]
+                                
+                                url = None
+                                for url_sel in url_selectors:
+                                    try:
+                                        url_elem = await element.query_selector(url_sel)
+                                        if url_elem:
+                                            href = await url_elem.get_attribute('href')
+                                            if href:
+                                                if href.startswith('/'):
+                                                    url = f"https://www.amazon.com.mx{href}"
+                                                else:
+                                                    url = href
+                                                break
+                                    except:
+                                        continue
+                                
+                                if title and price and url:
+                                    products.append({
+                                        'name': title.strip(),
+                                        'price': price.strip(),
+                                        'url': url,
+                                        'site': 'Amazon México'
+                                    })
+                                    
+                            except Exception as e:
+                                continue
+                        
+                        if products:
+                            break
+                            
+                    await page.wait_for_timeout(random.randint(500, 1000))
+                    
+                except Exception as e:
+                    continue
+            
+            print(f"✅ Amazon: {len(products)} resultados")
+            return products
+            
+        except Exception as e:
+            print(f"❌ Error en Amazon: {e}")
+            return []
+    
+    async def scrape_mercadolibre_advanced(self, page, product_name: str, keywords: str) -> List[Dict[str, Any]]:
+        """Scraper avanzado para MercadoLibre"""
+        try:
+            print(f"🛒 Scrapeando {product_name} en MercadoLibre (modo avanzado)...")
+            
+            search_query = keywords.replace(' ', '%20')
+            search_url = f"https://listado.mercadolibre.com.mx/{search_query}"
+            
+            await page.goto(search_url, wait_until='networkidle', timeout=30000)
+            await page.wait_for_timeout(random.randint(1000, 3000))
+            
+            # Simular comportamiento humano
+            await page.evaluate(f"window.scrollTo(0, {random.randint(100, 800)})")
+            await page.wait_for_timeout(random.randint(500, 1500))
+            
+            # Múltiples selectores para productos
+            product_selectors = [
+                '.ui-search-item',
+                '.item',
+                '[data-testid="product-item"]'
+            ]
+            
+            products = []
+            for selector in product_selectors:
+                try:
+                    elements = await page.query_selector_all(selector)
+                    if elements:
+                        print(f"📦 Productos encontrados con selector {selector}: {len(elements)}")
+                        
+                        for element in elements[:5]:
+                            try:
+                                # Título
+                                title_selectors = [
+                                    '.ui-search-item__title',
+                                    'h2',
+                                    '.item__title'
+                                ]
+                                
+                                title = None
+                                for title_sel in title_selectors:
+                                    try:
+                                        title_elem = await element.query_selector(title_sel)
+                                        if title_elem:
+                                            title = await title_elem.inner_text()
+                                            if title and len(title.strip()) > 10:
+                                                break
+                                    except:
+                                        continue
+                                
+                                if not title:
+                                    continue
+                                
+                                # Precio
+                                price_selectors = [
+                                    '.price-tag-fraction',
+                                    '.ui-search-price__part',
+                                    '.item__price'
+                                ]
+                                
+                                price = None
+                                for price_sel in price_selectors:
+                                    try:
+                                        price_elem = await element.query_selector(price_sel)
+                                        if price_elem:
+                                            price_text = await price_elem.inner_text()
+                                            if price_text and '$' in price_text:
+                                                price = price_text
+                                                break
+                                    except:
+                                        continue
+                                
+                                # URL
+                                url_selectors = [
+                                    'a',
+                                    '.ui-search-link'
+                                ]
+                                
+                                url = None
+                                for url_sel in url_selectors:
+                                    try:
+                                        url_elem = await element.query_selector(url_sel)
+                                        if url_elem:
+                                            href = await url_elem.get_attribute('href')
+                                            if href:
+                                                url = href
+                                                break
+                                    except:
+                                        continue
+                                
+                                if title and price and url:
+                                    products.append({
+                                        'name': title.strip(),
+                                        'price': price.strip(),
+                                        'url': url,
+                                        'site': 'MercadoLibre México'
+                                    })
+                                    
+                            except Exception as e:
+                                continue
+                        
+                        if products:
+                            break
+                            
+                    await page.wait_for_timeout(random.randint(500, 1000))
+                    
+                except Exception as e:
+                    continue
+            
+            print(f"✅ MercadoLibre: {len(products)} resultados")
+            return products
+            
+        except Exception as e:
+            print(f"❌ Error en MercadoLibre: {e}")
+            return []
+    
+    async def analyze_deal_with_ai(self, product_data: Dict[str, Any]) -> Dict[str, Any]:
+        """Analizar oferta con IA"""
+        try:
+            prompt = f"""
+            Eres un experto en análisis de ofertas de productos electrónicos.
+            Analiza esta oferta y proporciona tu opinión profesional.
+            
+            Producto: {product_data['name']}
+            Precio: {product_data['current_price']}
+            Descuento: {product_data['discount_percentage']:.1f}%
+            Sitio: {product_data['site']}
+            
+            Proporciona análisis en JSON con:
+            - confidence_score: 0-1 (confianza en la oferta)
+            - reasoning: explicación detallada del análisis
+            - market_opinion: opinión sobre el mercado y tendencias
+            - recommendation: recomendación específica (comprar/no comprar/esperar)
+            - resell_potential: potencial de reventa 1-10
+            
+            Responde SOLO en formato JSON válido.
+            """
+            
+            response = openai.ChatCompletion.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "Eres un experto en análisis de ofertas. Responde SOLO en JSON válido."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+                max_tokens=500
+            )
+            
+            ai_response = response.choices[0].message.content.strip()
+            
+            # Limpiar respuesta
+            if ai_response.startswith("```json"):
+                ai_response = ai_response.replace("```json", "").replace("```", "").strip()
+            elif ai_response.startswith("```"):
+                ai_response = ai_response.replace("```", "").strip()
+            
+            analysis = json.loads(ai_response)
+            
+            return {
+                'confidence_score': analysis.get('confidence_score', 0.5),
+                'reasoning': analysis.get('reasoning', 'Análisis no disponible'),
+                'market_opinion': analysis.get('market_opinion', 'Sin opinión'),
+                'recommendation': analysis.get('recommendation', 'Sin recomendación'),
+                'resell_potential': analysis.get('resell_potential', 5)
+            }
+            
+        except Exception as e:
+            print(f"❌ Error en análisis IA: {e}")
+            return {
+                'confidence_score': 0.5,
+                'reasoning': 'Error en análisis IA',
+                'market_opinion': 'Sin opinión',
+                'recommendation': 'Sin recomendación',
+                'resell_potential': 5
+            }
+    
+    async def send_telegram_notification(self, deal_data: Dict[str, Any], ai_analysis: Dict[str, Any]):
+        """Enviar notificación a Telegram con análisis IA"""
+        try:
+            confidence = ai_analysis['confidence_score']
+            reasoning = ai_analysis['reasoning']
+            market_opinion = ai_analysis['market_opinion']
+            recommendation = ai_analysis['recommendation']
+            resell_potential = ai_analysis['resell_potential']
+            
+            message = f"""🤖 Análisis IA - Oferta Detectada
+
+📱 {deal_data['name']}
+🏪 {deal_data['site']}
+💰 Precio: {deal_data['current_price']}
+📉 DESCUENTO: {deal_data['discount_percentage']:.1f}%
+
+🧠 Análisis IA:
+💭 {reasoning}
+📊 Confianza: {confidence:.0%}
+💡 Recomendación: {recommendation}
+📈 Opinión mercado: {market_opinion}
+🔄 Potencial reventa: {resell_potential}/10"""
+            
+            url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+            data = {
+                'chat_id': TELEGRAM_CHAT_ID,
+                'text': message,
+                'parse_mode': 'HTML'
+            }
+            
+            response = requests.post(url, data=data, timeout=10)
+            
+            if response.status_code == 200:
+                print("✅ Notificación enviada con análisis IA")
+                self.notifications_sent += 1
+            else:
+                print(f"❌ Error enviando notificación: {response.status_code}")
+                
+        except Exception as e:
+            print(f"❌ Error en notificación: {e}")
+    
+    async def send_summary_with_ai(self):
+        """Enviar resumen con análisis IA"""
+        try:
+            total_products = len(self.ai_products)
+            real_deals = len(self.real_deals)
+            
+            prompt = f"""
+            Eres un experto en análisis de mercado de productos electrónicos.
+            
+            Resumen de scraping:
+            - Productos revisados: {total_products}
+            - Ofertas reales encontradas: {real_deals}
+            - Tiempo de ejecución: {self.execution_time.strftime('%H:%M:%S')}
+            
+            Proporciona un análisis profesional en JSON con:
+            - market_analysis: análisis del estado del mercado
+            - trends: tendencias observadas
+            - recommendations: recomendaciones para el usuario
+            - next_steps: próximos pasos sugeridos
+            
+            Responde SOLO en formato JSON válido.
+            """
+            
+            response = openai.ChatCompletion.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "Eres un experto en análisis de mercado. Responde SOLO en JSON válido."},
+                    {"role": "user", "content": prompt}
+                ],
+                temperature=0.3,
+                max_tokens=300
+            )
+            
+            ai_response = response.choices[0].message.content.strip()
+            
+            # Limpiar respuesta
+            if ai_response.startswith("```json"):
+                ai_response = ai_response.replace("```json", "").replace("```", "").strip()
+            elif ai_response.startswith("```"):
+                ai_response = ai_response.replace("```", "").strip()
+            
+            analysis = json.loads(ai_response)
+            
+            message = f"""🤖 Resumen IA - Sistema de Scraping
+
+✅ Estado: Sistema funcionando
+📊 Productos revisados: {total_products}
+🎯 Ofertas reales: {real_deals}
+⏰ Ejecutado: {self.execution_time.strftime('%H:%M:%S')}
+
+💡 Análisis IA: {analysis.get('market_analysis', 'Sin análisis')}
+📈 Tendencias: {analysis.get('trends', 'Sin tendencias')}
+🔄 Recomendaciones: {analysis.get('recommendations', 'Sin recomendaciones')}
+🎯 Próximos pasos: {analysis.get('next_steps', 'Continuar monitoreo')}"""
+            
+            url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+            data = {
+                'chat_id': TELEGRAM_CHAT_ID,
+                'text': message,
+                'parse_mode': 'HTML'
+            }
+            
+            response = requests.post(url, data=data, timeout=10)
+            
+            if response.status_code == 200:
+                print("✅ Resumen con IA enviado!")
+            else:
+                print(f"❌ Error enviando resumen: {response.status_code}")
+                
+        except Exception as e:
+            print(f"❌ Error en resumen IA: {e}")
+    
+    async def run_advanced_scraping(self):
+        """Ejecutar scraping avanzado con 20 productos IA"""
+        print("🚀 === SISTEMA AVANZADO CON 20 PRODUCTOS IA ===")
+        print(f"⏰ Ejecutado: {self.execution_time.strftime('%Y-%m-%d %H:%M:%S')}")
+        
+        # Generar productos con IA
+        self.ai_products = await self.generate_ai_products()
+        print(f"🎯 Productos objetivo: {len(self.ai_products)}")
+        
+        async with async_playwright() as playwright:
+            browser, context = await self.create_stealth_browser(playwright)
+            page = await context.new_page()
+            
+            try:
+                for i, product in enumerate(self.ai_products, 1):
+                    print(f"\n📱 Producto {i}/{len(self.ai_products)}: {product['nombre_exacto']}")
+                    
+                    # Scraping en Amazon
+                    amazon_results = await self.scrape_amazon_advanced(
+                        page, 
+                        product['nombre_exacto'], 
+                        product['keywords_busqueda']
+                    )
+                    
+                    # Scraping en MercadoLibre
+                    mercadolibre_results = await self.scrape_mercadolibre_advanced(
+                        page, 
+                        product['nombre_exacto'], 
+                        product['keywords_busqueda']
+                    )
+                    
+                    # Procesar resultados
+                    all_results = amazon_results + mercadolibre_results
+                    
+                    for result in all_results:
+                        try:
+                            # Extraer precio numérico
+                            price_text = result['price'].replace('$', '').replace(',', '').replace('MXN', '').strip()
+                            price_value = float(price_text.split()[0])
+                            
+                            # Calcular descuento (asumiendo precio estimado como referencia)
+                            estimated_price = product.get('precio_estimado', 10000)
+                            discount = ((estimated_price - price_value) / estimated_price) * 100
+                            
+                            if discount > 50:  # Solo ofertas >50% descuento
+                                deal_data = {
+                                    'name': result['name'],
+                                    'current_price': result['price'],
+                                    'estimated_price': estimated_price,
+                                    'discount_percentage': discount,
+                                    'site': result['site'],
+                                    'url': result['url']
+                                }
+                                
+                                # Análisis con IA
+                                ai_analysis = await self.analyze_deal_with_ai(deal_data)
+                                
+                                # Solo enviar si confianza >= 0.65
+                                if ai_analysis['confidence_score'] >= 0.65:
+                                    self.real_deals.append(deal_data)
+                                    await self.send_telegram_notification(deal_data, ai_analysis)
+                                    
+                        except Exception as e:
+                            continue
+                    
+                    # Pausa entre productos
+                    await page.wait_for_timeout(random.randint(2000, 5000))
+                
+                # Enviar resumen con IA
+                await self.send_summary_with_ai()
+                
+            finally:
+                await browser.close()
+        
+        print(f"\n📊 === RESUMEN FINAL CON IA ===")
+        print(f"✅ Productos revisados: {len(self.ai_products)}")
+        print(f"🔥 Ofertas reales >50%: {len(self.real_deals)}")
+        print(f"🧠 Análisis IA: {len(self.real_deals)}")
+        print(f"📱 Notificaciones enviadas: {self.notifications_sent}")
+        print(f"🎉 ¡Sistema con 20 productos IA ejecutado exitosamente!")
+
+async def main():
+    """Función principal"""
+    scraper = AI20ProductsScraper()
+    await scraper.run_advanced_scraping()
+
+if __name__ == "__main__":
+    asyncio.run(main())

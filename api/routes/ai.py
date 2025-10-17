@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from api.models import Deal, Product, Price
+from models import Deal, Product, Price
+from main import get_db
+from datetime import datetime
 from pydantic import BaseModel
 from typing import Optional
 import openai
