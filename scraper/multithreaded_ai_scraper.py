@@ -549,15 +549,15 @@ class MultithreadedAIScraper:
                     'resell_potential': 5
                 }
             
-        # Send to both chats (only if configured)
-        chats_to_notify = []
-        if TELEGRAM_CHAT_ID_HIGH:
-            chats_to_notify.append((TELEGRAM_CHAT_ID_HIGH, "Chat Excelentes"))
-        if TELEGRAM_CHAT_ID_MEDIUM:
-            chats_to_notify.append((TELEGRAM_CHAT_ID_MEDIUM, "Chat Buenos"))
-        
-        for chat_id, chat_name in chats_to_notify:
-            message = f"""🤖 Resumen IA - Sistema Multihilo
+            # Send to both chats (only if configured)
+            chats_to_notify = []
+            if TELEGRAM_CHAT_ID_HIGH:
+                chats_to_notify.append((TELEGRAM_CHAT_ID_HIGH, "Chat Excelentes"))
+            if TELEGRAM_CHAT_ID_MEDIUM:
+                chats_to_notify.append((TELEGRAM_CHAT_ID_MEDIUM, "Chat Buenos"))
+            
+            for chat_id, chat_name in chats_to_notify:
+                message = f"""🤖 Resumen IA - Sistema Multihilo
 
 ✅ Estado: Sistema funcionando
 📊 Productos revisados: {total_products}
@@ -569,20 +569,20 @@ class MultithreadedAIScraper:
 📈 Tendencias: {analysis.get('trends', 'Sin tendencias')}
 🔄 Recomendaciones: {analysis.get('recommendations', 'Sin recomendaciones')}
 🎯 Próximos pasos: {analysis.get('next_steps', 'Continuar monitoreo')}"""
-            
-            url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
-            data = {
-                'chat_id': chat_id,
-                'text': message,
-                'parse_mode': 'HTML'
-            }
-            
-            response = requests.post(url, data=data, timeout=10)
-            
-            if response.status_code == 200:
-                print(f"✅ Summary sent to {chat_name}")
-            else:
-                print(f"❌ Error sending summary to {chat_name}: {response.status_code}")
+                
+                url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
+                data = {
+                    'chat_id': chat_id,
+                    'text': message,
+                    'parse_mode': 'HTML'
+                }
+                
+                response = requests.post(url, data=data, timeout=10)
+                
+                if response.status_code == 200:
+                    print(f"✅ Summary sent to {chat_name}")
+                else:
+                    print(f"❌ Error sending summary to {chat_name}: {response.status_code}")
                 
         except Exception as e:
             print(f"❌ Error in AI summary: {e}")
