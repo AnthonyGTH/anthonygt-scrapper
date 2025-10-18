@@ -1,0 +1,173 @@
+[
+  {
+    "nombre_exacto": "PlayStation 5",
+    "categoria": "Consola",
+    "marca": "Sony",
+    "precio_estimado": 14999,
+    "facilidad_reventa": 10,
+    "demanda": "Alta",
+    "keywords_busqueda": "PlayStation 5, consola, Sony"
+  },
+  {
+    "nombre_exacto": "Xbox Series X",
+    "categoria": "Consola",
+    "marca": "Microsoft",
+    "precio_estimado": 14999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "Xbox Series X, consola, Microsoft"
+  },
+  {
+    "nombre_exacto": "iPhone 13",
+    "categoria": "Celular",
+    "marca": "Apple",
+    "precio_estimado": 24999,
+    "facilidad_reventa": 10,
+    "demanda": "Alta",
+    "keywords_busqueda": "iPhone 13, celular, Apple"
+  },
+  {
+    "nombre_exacto": "Samsung Galaxy S21",
+    "categoria": "Celular",
+    "marca": "Samsung",
+    "precio_estimado": 19999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "Samsung Galaxy S21, celular, Samsung"
+  },
+  {
+    "nombre_exacto": "AirPods Pro",
+    "categoria": "Audífonos",
+    "marca": "Apple",
+    "precio_estimado": 4999,
+    "facilidad_reventa": 8,
+    "demanda": "Alta",
+    "keywords_busqueda": "AirPods Pro, audífonos, Apple"
+  },
+  {
+    "nombre_exacto": "Sony WH-1000XM4",
+    "categoria": "Audífonos",
+    "marca": "Sony",
+    "precio_estimado": 8999,
+    "facilidad_reventa": 8,
+    "demanda": "Alta",
+    "keywords_busqueda": "Sony WH-1000XM4, audífonos, Sony"
+  },
+  {
+    "nombre_exacto": "Canon EOS M50",
+    "categoria": "Cámara",
+    "marca": "Canon",
+    "precio_estimado": 19999,
+    "facilidad_reventa": 7,
+    "demanda": "Media",
+    "keywords_busqueda": "Canon EOS M50, cámara, Canon"
+  },
+  {
+    "nombre_exacto": "Nikon D5600",
+    "categoria": "Cámara",
+    "marca": "Nikon",
+    "precio_estimado": 18999,
+    "facilidad_reventa": 7,
+    "demanda": "Media",
+    "keywords_busqueda": "Nikon D5600, cámara, Nikon"
+  },
+  {
+    "nombre_exacto": "MacBook Air M1",
+    "categoria": "Laptop",
+    "marca": "Apple",
+    "precio_estimado": 34999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "MacBook Air M1, laptop, Apple"
+  },
+  {
+    "nombre_exacto": "Dell XPS 13",
+    "categoria": "Laptop",
+    "marca": "Dell",
+    "precio_estimado": 29999,
+    "facilidad_reventa": 8,
+    "demanda": "Media",
+    "keywords_busqueda": "Dell XPS 13, laptop, Dell"
+  },
+  {
+    "nombre_exacto": "iPad Air (4ª generación)",
+    "categoria": "Tablet",
+    "marca": "Apple",
+    "precio_estimado": 19999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "iPad Air, tablet, Apple"
+  },
+  {
+    "nombre_exacto": "Samsung Galaxy Tab S7",
+    "categoria": "Tablet",
+    "marca": "Samsung",
+    "precio_estimado": 17999,
+    "facilidad_reventa": 8,
+    "demanda": "Media",
+    "keywords_busqueda": "Samsung Galaxy Tab S7, tablet, Samsung"
+  },
+  {
+    "nombre_exacto": "Apple Watch Series 7",
+    "categoria": "Smartwatch",
+    "marca": "Apple",
+    "precio_estimado": 10999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "Apple Watch Series 7, smartwatch, Apple"
+  },
+  {
+    "nombre_exacto": "Samsung Galaxy Watch 4",
+    "categoria": "Smartwatch",
+    "marca": "Samsung",
+    "precio_estimado": 7999,
+    "facilidad_reventa": 8,
+    "demanda": "Media",
+    "keywords_busqueda": "Samsung Galaxy Watch 4, smartwatch, Samsung"
+  },
+  {
+    "nombre_exacto": "Nintendo Switch",
+    "categoria": "Consola",
+    "marca": "Nintendo",
+    "precio_estimado": 9999,
+    "facilidad_reventa": 10,
+    "demanda": "Alta",
+    "keywords_busqueda": "Nintendo Switch, consola, Nintendo"
+  },
+  {
+    "nombre_exacto": "Oculus Quest 2",
+    "categoria": "Consola",
+    "marca": "Meta",
+    "precio_estimado": 10999,
+    "facilidad_reventa": 8,
+    "demanda": "Media",
+    "keywords_busqueda": "Oculus Quest 2, consola, Meta"
+  },
+  {
+    "nombre_exacto": "Sony PlayStation 5 Digital Edition",
+    "categoria": "Consola",
+    "marca": "Sony",
+    "precio_estimado": 13999,
+    "facilidad_reventa": 10,
+    "demanda": "Alta",
+    "keywords_busqueda": "PlayStation 5 Digital Edition, consola, Sony"
+  },
+  {
+    "nombre_exacto": "Asus ROG Zephyrus G14",
+    "categoria": "Laptop",
+    "marca": "Asus",
+    "precio_estimado": 44999,
+    "facilidad_reventa": 8,
+    "demanda": "Media",
+    "keywords_busqueda": "Asus ROG Zephyrus G14, laptop, Asus"
+  },
+  {
+    "nombre_exacto": "Lenovo Yoga 7i",
+    "categoria": "Laptop",
+    "marca": "Lenovo",
+    "precio_estimado": 29999,
+    "facilidad_reventa": 7,
+    "demanda": "Media",
+    "keywords_busqueda": "Lenovo Yoga 7i, laptop, Lenovo"
+  }
+]

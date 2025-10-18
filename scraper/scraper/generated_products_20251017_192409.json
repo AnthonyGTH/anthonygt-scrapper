@@ -1,0 +1,164 @@
+[
+  {
+    "nombre_exacto": "PlayStation 5",
+    "categoria": "Consola",
+    "marca": "Sony",
+    "precio_estimado": 14999,
+    "facilidad_reventa": 10,
+    "demanda": "Alta",
+    "keywords_busqueda": "PlayStation 5, consola Sony, videojuegos"
+  },
+  {
+    "nombre_exacto": "Xbox Series X",
+    "categoria": "Consola",
+    "marca": "Microsoft",
+    "precio_estimado": 14999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "Xbox Series X, consola Microsoft, videojuegos"
+  },
+  {
+    "nombre_exacto": "iPhone 14",
+    "categoria": "Celular",
+    "marca": "Apple",
+    "precio_estimado": 24999,
+    "facilidad_reventa": 10,
+    "demanda": "Alta",
+    "keywords_busqueda": "iPhone 14, celular Apple, smartphone"
+  },
+  {
+    "nombre_exacto": "Samsung Galaxy S23",
+    "categoria": "Celular",
+    "marca": "Samsung",
+    "precio_estimado": 22999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "Samsung Galaxy S23, celular Samsung, smartphone"
+  },
+  {
+    "nombre_exacto": "AirPods Pro",
+    "categoria": "Audífonos",
+    "marca": "Apple",
+    "precio_estimado": 4999,
+    "facilidad_reventa": 8,
+    "demanda": "Alta",
+    "keywords_busqueda": "AirPods Pro, audífonos Apple, inalámbricos"
+  },
+  {
+    "nombre_exacto": "Sony WH-1000XM4",
+    "categoria": "Audífonos",
+    "marca": "Sony",
+    "precio_estimado": 7999,
+    "facilidad_reventa": 8,
+    "demanda": "Alta",
+    "keywords_busqueda": "Sony WH-1000XM4, audífonos Sony, cancelación de ruido"
+  },
+  {
+    "nombre_exacto": "Canon EOS Rebel T8i",
+    "categoria": "Cámara",
+    "marca": "Canon",
+    "precio_estimado": 19999,
+    "facilidad_reventa": 7,
+    "demanda": "Media",
+    "keywords_busqueda": "Canon EOS Rebel T8i, cámara Canon, DSLR"
+  },
+  {
+    "nombre_exacto": "GoPro HERO10",
+    "categoria": "Cámara",
+    "marca": "GoPro",
+    "precio_estimado": 13999,
+    "facilidad_reventa": 8,
+    "demanda": "Alta",
+    "keywords_busqueda": "GoPro HERO10, cámara GoPro, acción"
+  },
+  {
+    "nombre_exacto": "MacBook Air M2",
+    "categoria": "Laptop",
+    "marca": "Apple",
+    "precio_estimado": 32999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "MacBook Air M2, laptop Apple, portátil"
+  },
+  {
+    "nombre_exacto": "Dell XPS 13",
+    "categoria": "Laptop",
+    "marca": "Dell",
+    "precio_estimado": 24999,
+    "facilidad_reventa": 8,
+    "demanda": "Media",
+    "keywords_busqueda": "Dell XPS 13, laptop Dell, portátil"
+  },
+  {
+    "nombre_exacto": "iPad Air 5",
+    "categoria": "Tablet",
+    "marca": "Apple",
+    "precio_estimado": 19999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "iPad Air 5, tablet Apple, iPad"
+  },
+  {
+    "nombre_exacto": "Samsung Galaxy Tab S8",
+    "categoria": "Tablet",
+    "marca": "Samsung",
+    "precio_estimado": 17999,
+    "facilidad_reventa": 8,
+    "demanda": "Media",
+    "keywords_busqueda": "Samsung Galaxy Tab S8, tablet Samsung, Galaxy Tab"
+  },
+  {
+    "nombre_exacto": "Apple Watch Series 8",
+    "categoria": "Smartwatch",
+    "marca": "Apple",
+    "precio_estimado": 10999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "Apple Watch Series 8, smartwatch Apple, reloj inteligente"
+  },
+  {
+    "nombre_exacto": "Samsung Galaxy Watch 5",
+    "categoria": "Smartwatch",
+    "marca": "Samsung",
+    "precio_estimado": 8999,
+    "facilidad_reventa": 8,
+    "demanda": "Media",
+    "keywords_busqueda": "Samsung Galaxy Watch 5, smartwatch Samsung, reloj inteligente"
+  },
+  {
+    "nombre_exacto": "Nintendo Switch",
+    "categoria": "Consola",
+    "marca": "Nintendo",
+    "precio_estimado": 9999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "Nintendo Switch, consola Nintendo, videojuegos"
+  },
+  {
+    "nombre_exacto": "Sony PlayStation VR",
+    "categoria": "Consola",
+    "marca": "Sony",
+    "precio_estimado": 8999,
+    "facilidad_reventa": 7,
+    "demanda": "Media",
+    "keywords_busqueda": "Sony PlayStation VR, realidad virtual, videojuegos"
+  },
+  {
+    "nombre_exacto": "Razer Blade 15",
+    "categoria": "Laptop",
+    "marca": "Razer",
+    "precio_estimado": 49999,
+    "facilidad_reventa": 8,
+    "demanda": "Media",
+    "keywords_busqueda": "Razer Blade 15, laptop Razer, gaming"
+  },
+  {
+    "nombre_exacto": "Asus ROG Zephyrus G14",
+    "categoria": "Laptop",
+    "marca": "Asus",
+    "precio_estimado": 39999,
+    "facilidad_reventa": 8,
+    "demanda": "Media",
+    "keywords_busqueda": "Asus ROG Zephyrus G14, laptop Asus, gaming"
+  }
+]

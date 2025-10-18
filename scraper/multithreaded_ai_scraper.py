@@ -13,6 +13,7 @@ from datetime import datetime
 from typing import List, Dict, Any, Optional
 from playwright.async_api import async_playwright
 import openai
+from price_research.improved_price_checker import ImprovedPriceChecker
 import requests
 import concurrent.futures
 from threading import Thread
@@ -32,6 +33,13 @@ TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHAT_ID_HIGH = os.getenv("TELEGRAM_CHAT_ID_HIGH", "-1003150179214")  # Chat para descuentos >50%
 TELEGRAM_CHAT_ID_MEDIUM = os.getenv("TELEGRAM_CHAT_ID_MEDIUM", "-4871231611")  # Chat para descuentos 20-50%
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+
+# Verificar configuración de Telegram
+if not TELEGRAM_BOT_TOKEN:
+    print("⚠️ ADVERTENCIA: TELEGRAM_BOT_TOKEN no está configurado. Las notificaciones no funcionarán.")
+    print("   Configura la variable de entorno TELEGRAM_BOT_TOKEN con tu token de bot de Telegram.")
+else:
+    print(f"✅ Telegram Bot Token configurado: {TELEGRAM_BOT_TOKEN[:10]}...")
 
 class MultithreadedAIScraper:
     """Scraper multihilo con 20 productos IA y múltiples chats"""
@@ -60,22 +68,34 @@ class MultithreadedAIScraper:
         self.ai_products = []
         
         # Configurar OpenAI
-        self.openai_client = openai.OpenAI(api_key=OPENAI_API_KEY)
+        if OPENAI_API_KEY and OPENAI_API_KEY != "your_openai_api_key_here":
+            self.openai_client = openai.OpenAI(api_key=OPENAI_API_KEY)
+        else:
+            print("⚠️ ADVERTENCIA: OPENAI_API_KEY no configurado. Usando productos de fallback.")
+            self.openai_client = None
+        
+        # Configurar verificador de precios reales mejorado
+        self.price_checker = ImprovedPriceChecker()
+        print(f"✅ Verificador de precios reales mejorado configurado")
         
         # Queue para resultados
         self.results_queue = queue.Queue()
-        self.max_workers = 5  # Número de hilos paralelos
+        self.max_workers = 3  # Reduced to prevent EPIPE errors
     
     async def generate_ai_products(self) -> List[Dict[str, Any]]:
         """Generate 20 products with AI"""
         try:
-            print("🤖 Generando 20 productos con IA OpenAI...")
-            
-            generator = ProductGenerator()
-            products = await generator.generate_resellable_products(20)
-            
-            print(f"✅ {len(products)} productos generados por IA")
-            return products
+            if self.openai_client:
+                print("🤖 Generando 20 productos con IA OpenAI...")
+                
+                generator = ProductGenerator()
+                products = await generator.generate_resellable_products(20)
+                
+                print(f"✅ {len(products)} productos generados por IA")
+                return products
+            else:
+                print("🔄 Usando productos de fallback (sin OpenAI)...")
+                return await self._get_fallback_products()
             
         except Exception as e:
             print(f"❌ Error generando productos con IA: {e}")
@@ -415,23 +435,63 @@ class MultithreadedAIScraper:
             return []
     
     async def analyze_deal_with_ai(self, product_data: Dict[str, Any]) -> Dict[str, Any]:
-        """Analizar oferta con IA"""
+        """Analizar oferta con IA usando precios reales de reventa"""
         try:
-            prompt = f"""
-            Eres un experto en análisis de ofertas de productos electrónicos.
-            Analiza esta oferta y proporciona tu opinión profesional.
+            # Obtener precios reales de reventa
+            print(f"🔍 Obteniendo precios reales de reventa para: {product_data['name']}")
+            resale_data = await self.price_checker.get_resale_prices(product_data['name'])
             
-            Producto: {product_data['name']}
-            Precio: {product_data['current_price']}
-            Descuento: {product_data['discount_percentage']:.1f}%
+            # Guardar datos de reventa para usar en notificaciones
+            self._last_resale_data = resale_data
+            
+            # Analizar oportunidad de reventa
+            current_price = float(str(product_data['current_price']).replace('$', '').replace(',', ''))
+            price_analysis = self.price_checker.analyze_price_opportunity(current_price, resale_data)
+            
+            # Obtener precio estimado del producto original
+            original_product = None
+            for product in self.ai_products:
+                if product['nombre_exacto'].lower() in product_data['name'].lower():
+                    original_product = product
+                    break
+            
+            precio_estimado = original_product.get('precio_estimado', 0) if original_product else 0
+            
+            prompt = f"""
+            Eres un experto en análisis de ofertas de productos electrónicos y reventa.
+            Analiza esta oferta usando datos REALES de precios de reventa obtenidos de Facebook Marketplace, eBay y MercadoLibre.
+            
+            PRODUCTO BUSCADO: {original_product['nombre_exacto'] if original_product else 'Producto genérico'}
+            PRODUCTO ENCONTRADO: {product_data['name']}
+            Precio actual: {product_data['current_price']}
+            Precio estimado del mercado: ${precio_estimado}
+            Descuento calculado: {product_data['discount_percentage']:.1f}%
             Sitio: {product_data['site']}
             
+            DATOS REALES DE REVENTA OBTENIDOS:
+            - Precio promedio de reventa: ${resale_data.get('average_resale_price', 0):,.0f}
+            - Rango de precios: {resale_data.get('price_range', 'No disponible')}
+            - Confianza en datos: {resale_data.get('confidence', 'low')}
+            - Análisis de oportunidad: {price_analysis.get('reasoning', 'No disponible')}
+            - Es buena oportunidad: {price_analysis.get('is_good_deal', False)}
+            - Potencial de ganancia: ${price_analysis.get('profit_potential', 0):,.0f} ({price_analysis.get('profit_percentage', 0):.1f}%)
+            
+            TAREA CRÍTICA:
+            1. Verifica que el producto encontrado sea realmente el producto buscado (no accesorios)
+            2. Usa los datos REALES de precios de reventa proporcionados arriba
+            3. Considera el potencial de ganancia real calculado
+            4. Determina si realmente es una buena oportunidad de reventa
+            
             Proporciona análisis en JSON con:
-            - confidence_score: 0-1 (confianza en la oferta)
-            - reasoning: explicación detallada del análisis
-            - market_opinion: opinión sobre el mercado y tendencias
-            - recommendation: recomendación específica (comprar/no comprar/esperar)
+            - confidence_score: 0-1 (confianza en la oferta, 0.8+ solo si es el producto correcto Y buen precio de reventa)
+            - reasoning: explicación corta (máximo 50 palabras)
+            - market_opinion: opinión del mercado (máximo 30 palabras)
+            - recommendation: recomendación específica (máximo 20 palabras)
             - resell_potential: potencial de reventa 1-10
+            - is_correct_product: true/false si es el producto buscado
+            - real_discount: true/false si el descuento es real basado en precios de reventa REALES
+            - market_price_range: rango de precios de reventa REALES obtenido
+            - resell_price_estimate: precio estimado de reventa REAL obtenido
             
             Responde SOLO en formato JSON válido.
             """
@@ -443,7 +503,7 @@ class MultithreadedAIScraper:
                     {"role": "user", "content": prompt}
                 ],
                 temperature=0.3,
-                max_tokens=500
+                max_tokens=300
             )
             
             ai_response = response.choices[0].message.content.strip()
@@ -462,20 +522,71 @@ class MultithreadedAIScraper:
             except json.JSONDecodeError as e:
                 print(f"❌ Error parsing AI response: {e}")
                 print(f"Response: {ai_response[:200]}...")
-                return {
-                    'confidence_score': 0.5,
-                    'reasoning': 'Error parsing AI response',
-                    'market_opinion': 'No analysis available',
-                    'recommendation': 'Manual review required',
-                    'resell_potential': 5
-                }
+                # Intentar limpiar la respuesta
+                try:
+                    # Buscar el primer { y último } válido
+                    start = ai_response.find('{')
+                    end = ai_response.rfind('}')
+                    if start != -1 and end != -1 and end > start:
+                        cleaned_response = ai_response[start:end+1]
+                        analysis = json.loads(cleaned_response)
+                        print("✅ Respuesta limpiada exitosamente")
+                    else:
+                        raise ValueError("No se encontró JSON válido")
+                except:
+                    return {
+                        'confidence_score': 0.5,
+                        'reasoning': 'Error parsing AI response',
+                        'market_opinion': 'No analysis available',
+                        'recommendation': 'Manual review required',
+                        'resell_potential': 5
+                    }
+            
+            # Usar datos reales de reventa para ajustar la confianza
+            if not price_analysis.get('is_good_deal', False):
+                analysis['confidence_score'] = min(analysis.get('confidence_score', 0.5), 0.3)
+                analysis['reasoning'] = f"Oportunidad de reventa limitada: {price_analysis.get('reasoning', '')}"
+            
+            # Si no es el producto correcto, reducir significativamente la confianza
+            if not analysis.get('is_correct_product', True):
+                analysis['confidence_score'] = min(analysis.get('confidence_score', 0.5), 0.2)
+                analysis['reasoning'] = "Producto incorrecto o accesorio"
+            
+            # Filtrar productos que claramente son accesorios
+            product_name = product_data['name'].lower()
+            accessory_keywords = ['funda', 'carcasa', 'cargador', 'cable', 'adaptador', 'protector', 'estuche', 'case', 'cover', 'batería', 'bateria', 'lápiz', 'lapiz', 'stylus', 'correa', 'strap', 'band', 'pulsera', 'watch band', 'screen protector', 'película', 'film', 'tempered glass', 'vidrio templado']
+            
+            if any(keyword in product_name for keyword in accessory_keywords):
+                analysis['confidence_score'] = min(analysis.get('confidence_score', 0.5), 0.1)
+                analysis['reasoning'] = "Es un accesorio, no el producto principal"
+                analysis['is_correct_product'] = False
+            
+            # Si el descuento no es real, reducir la confianza
+            if not analysis.get('real_discount', True):
+                analysis['confidence_score'] = min(analysis.get('confidence_score', 0.5), 0.4)
+                analysis['reasoning'] = f"{analysis.get('reasoning', '')} - Descuento inflado"
+            
+            # Usar datos reales de reventa para validar la oportunidad
+            if resale_data.get('average_resale_price', 0) > 0:
+                try:
+                    current_price = float(str(product_data['current_price']).replace('$', '').replace(',', ''))
+                    avg_resale = resale_data.get('average_resale_price', 0)
+                    if avg_resale <= current_price * 1.1:  # Si la reventa es similar al precio actual
+                        analysis['confidence_score'] = min(analysis.get('confidence_score', 0.5), 0.3)
+                        analysis['reasoning'] = f"{analysis.get('reasoning', '')} - Precio similar a reventa real"
+                except (ValueError, TypeError):
+                    pass  # Si no se puede convertir el precio, continuar
             
             return {
                 'confidence_score': analysis.get('confidence_score', 0.5),
                 'reasoning': analysis.get('reasoning', 'Análisis no disponible'),
                 'market_opinion': analysis.get('market_opinion', 'Sin opinión'),
                 'recommendation': analysis.get('recommendation', 'Sin recomendación'),
-                'resell_potential': analysis.get('resell_potential', 5)
+                'resell_potential': analysis.get('resell_potential', 5),
+                'is_correct_product': analysis.get('is_correct_product', True),
+                'real_discount': analysis.get('real_discount', True),
+                'market_price_range': analysis.get('market_price_range', 'No disponible'),
+                'resell_price_estimate': analysis.get('resell_price_estimate', 'No disponible')
             }
             
         except Exception as e:
@@ -491,6 +602,11 @@ class MultithreadedAIScraper:
     async def send_telegram_notification(self, deal_data: Dict[str, Any], ai_analysis: Dict[str, Any], chat_id: str, discount_type: str):
         """Enviar notificación a Telegram con análisis IA"""
         try:
+            # Verificar si el bot token está configurado
+            if not TELEGRAM_BOT_TOKEN:
+                print(f"⚠️ No se puede enviar notificación {discount_type}: TELEGRAM_BOT_TOKEN no configurado")
+                return
+            
             confidence = ai_analysis['confidence_score']
             reasoning = ai_analysis['reasoning']
             market_opinion = ai_analysis['market_opinion']
@@ -499,6 +615,25 @@ class MultithreadedAIScraper:
             
             emoji = "🔥" if discount_type == "high" else "💰"
             title = "Oferta EXCELENTE" if discount_type == "high" else "Oferta BUENA"
+            
+            # Información adicional del análisis
+            product_status = "✅ Producto correcto" if ai_analysis.get('is_correct_product', True) else "❌ Accesorio/producto incorrecto"
+            discount_status = "✅ Descuento real" if ai_analysis.get('real_discount', True) else "⚠️ Descuento inflado"
+            market_range = ai_analysis.get('market_price_range', 'No disponible')
+            resell_estimate = ai_analysis.get('resell_price_estimate', 'No disponible')
+            
+            # Agregar datos de precios reales si están disponibles
+            real_data_info = ""
+            if 'resale_data' in deal_data:
+                resale_data = deal_data['resale_data']
+                print(f"📊 Datos de reventa en notificación: {resale_data}")
+                if resale_data.get('average_resale_price', 0) > 0:
+                    real_data_info = f"\n💰 Precio reventa real: ${resale_data.get('average_resale_price', 0):,.0f}\n📊 Rango real: {resale_data.get('price_range', 'N/A')}"
+                    print(f"✅ Datos de reventa válidos agregados al mensaje")
+                else:
+                    print(f"⚠️ Datos de reventa con precio promedio 0")
+            else:
+                print(f"⚠️ No hay datos de reventa en deal_data")
             
             message = f"""{emoji} {title} - Análisis IA
 
@@ -512,25 +647,58 @@ class MultithreadedAIScraper:
 📊 Confianza: {confidence:.0%}
 💡 Recomendación: {recommendation}
 📈 Opinión mercado: {market_opinion}
-🔄 Potencial reventa: {resell_potential}/10"""
+🔄 Potencial reventa: {resell_potential}/10
+
+🔍 Verificación:
+{product_status}
+{discount_status}
+💰 Rango mercado: {market_range}
+💵 Precio reventa estimado: {resell_estimate}{real_data_info}"""
+            
+            # Crear botones de Telegram (solo si hay URL válida)
+            keyboard = None
+            print(f"🔗 Verificando URL para botones: {deal_data.get('url')}")
+            if deal_data.get('url') and deal_data.get('url') != '#' and deal_data.get('url').startswith('http'):
+                try:
+                    keyboard = {
+                        "inline_keyboard": [
+                            [{"text": "🔗 Ver Producto", "url": deal_data.get('url')}],
+                            [{"text": "📊 Comparar Precios", "url": f"https://www.google.com/search?q={deal_data['name'].replace(' ', '+')}+precio"}]
+                        ]
+                    }
+                    print(f"✅ Botones creados exitosamente")
+                except Exception as e:
+                    print(f"⚠️ Error creando botones: {e}")
+                    keyboard = None
+            else:
+                print(f"⚠️ URL no válida para botones: {deal_data.get('url')}")
             
             url = f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage"
             data = {
                 'chat_id': chat_id,
                 'text': message,
-                'parse_mode': 'HTML'
+                'parse_mode': 'Markdown'
             }
             
+            # Solo agregar botones si existen
+            if keyboard:
+                data['reply_markup'] = json.dumps(keyboard)
+                print(f"✅ Botones agregados al mensaje de Telegram")
+            else:
+                print(f"⚠️ No hay botones para agregar")
+            
+            print(f"📤 Enviando notificación {discount_type} a chat {chat_id}...")
             response = requests.post(url, data=data, timeout=10)
             
             if response.status_code == 200:
-                print(f"✅ {discount_type} notification sent with AI analysis")
+                print(f"✅ Notificación {discount_type} enviada exitosamente")
                 self.notifications_sent += 1
             else:
-                print(f"❌ Error sending {discount_type} notification: {response.status_code}")
+                print(f"❌ Error enviando notificación {discount_type}: {response.status_code}")
+                print(f"   Respuesta: {response.text}")
                 
         except Exception as e:
-            print(f"❌ Error in {discount_type} notification: {e}")
+            print(f"❌ Error en notificación {discount_type}: {e}")
     
     async def send_summary_with_ai(self):
         """Enviar resumen con análisis IA"""
@@ -583,13 +751,25 @@ class MultithreadedAIScraper:
             except json.JSONDecodeError as e:
                 print(f"❌ Error parsing AI response: {e}")
                 print(f"Response: {ai_response[:200]}...")
-                return {
-                    'confidence_score': 0.5,
-                    'reasoning': 'Error parsing AI response',
-                    'market_opinion': 'No analysis available',
-                    'recommendation': 'Manual review required',
-                    'resell_potential': 5
-                }
+                # Intentar limpiar la respuesta
+                try:
+                    # Buscar el primer { y último } válido
+                    start = ai_response.find('{')
+                    end = ai_response.rfind('}')
+                    if start != -1 and end != -1 and end > start:
+                        cleaned_response = ai_response[start:end+1]
+                        analysis = json.loads(cleaned_response)
+                        print("✅ Respuesta limpiada exitosamente")
+                    else:
+                        raise ValueError("No se encontró JSON válido")
+                except:
+                    return {
+                        'confidence_score': 0.5,
+                        'reasoning': 'Error parsing AI response',
+                        'market_opinion': 'No analysis available',
+                        'recommendation': 'Manual review required',
+                        'resell_potential': 5
+                    }
             
             # Send to both chats (only if configured)
             chats_to_notify = []
@@ -668,10 +848,18 @@ class MultithreadedAIScraper:
         except Exception as e:
             print(f"❌ Error sending no deals notification: {e}")
     
+    async def scrape_product_worker_with_semaphore(self, product: Dict[str, Any], worker_id: int, semaphore: asyncio.Semaphore):
+        """Worker with semaphore to limit concurrent execution"""
+        async with semaphore:
+            await self.scrape_product_worker(product, worker_id)
+    
     async def scrape_product_worker(self, product: Dict[str, Any], worker_id: int):
         """Worker for scraping a product using APIs (multithreaded)"""
         try:
             print(f"🔄 Worker {worker_id}: Processing {product['nombre_exacto']}")
+            
+            # Add small delay to reduce system load
+            await asyncio.sleep(worker_id * 0.5)  # Stagger requests
             
             # Use unified API client instead of scraping
             search_query = product['keywords_busqueda']
@@ -700,9 +888,23 @@ class MultithreadedAIScraper:
                     price_text = result['price'].replace('$', '').replace(',', '').replace('MXN', '').strip()
                     price_value = float(price_text.split()[0])
                     
-                    # Calcular descuento
-                    estimated_price = product.get('precio_estimado', 10000)
-                    discount = ((estimated_price - price_value) / estimated_price) * 100
+                    # Obtener precios de reventa reales para calcular descuento real
+                    print(f"🔍 Worker {worker_id}: Obteniendo precios de reventa para {result['name'][:30]}...")
+                    resale_data = await self.price_checker.get_resale_prices(result['name'])
+                    self._last_resale_data = resale_data
+                    
+                    # Calcular descuento basado en precio de reventa real
+                    avg_resale_price = resale_data.get('average_resale_price', 0)
+                    if avg_resale_price > 0:
+                        # Usar precio de reventa como referencia
+                        estimated_price = avg_resale_price  # Usar precio de reventa como referencia
+                        discount = ((avg_resale_price - price_value) / avg_resale_price) * 100
+                        print(f"💰 Worker {worker_id}: Precio reventa: ${avg_resale_price:,.0f} - Descuento real: {discount:.1f}%")
+                    else:
+                        # Fallback al precio estimado si no hay datos de reventa
+                        estimated_price = product.get('precio_estimado', 10000)
+                        discount = ((estimated_price - price_value) / estimated_price) * 100
+                        print(f"💰 Worker {worker_id}: Sin datos reventa - Usando precio estimado: ${estimated_price:,.0f} - Descuento: {discount:.1f}%")
                     
                     print(f"💰 Worker {worker_id}: Found {result['name'][:30]}... - Price: {result['price']} - Discount: {discount:.1f}%")
                     
@@ -716,8 +918,15 @@ class MultithreadedAIScraper:
                             'url': result['url']
                         }
                         
-                        # Análisis con IA
+                        # Análisis con IA (incluye datos de reventa reales)
                         ai_analysis = await self.analyze_deal_with_ai(deal_data)
+                        
+                        # Agregar datos de reventa reales al deal_data
+                        if hasattr(self, '_last_resale_data'):
+                            deal_data['resale_data'] = self._last_resale_data
+                            print(f"💰 Worker {worker_id}: Datos de reventa agregados - Precio promedio: ${self._last_resale_data.get('average_resale_price', 0):,.0f}")
+                        else:
+                            print(f"⚠️ Worker {worker_id}: No hay datos de reventa disponibles")
                         
                         # Clasificar por tipo de descuento
                         if discount > 50:
@@ -753,16 +962,19 @@ class MultithreadedAIScraper:
         self.ai_products = await self.generate_ai_products()
         print(f"🎯 Target products: {len(self.ai_products)}")
         
-        # Create async tasks for multithreading
+        # Create semaphore to limit concurrent workers
+        semaphore = asyncio.Semaphore(self.max_workers)
+        
+        # Create async tasks for multithreading with semaphore
         tasks = []
         for i, product in enumerate(self.ai_products):
             task = asyncio.create_task(
-                self.scrape_product_worker(product, i + 1)
+                self.scrape_product_worker_with_semaphore(product, i + 1, semaphore)
             )
             tasks.append(task)
         
         # Execute all tasks in parallel
-        print(f"🚀 Starting {len(tasks)} workers in parallel...")
+        print(f"🚀 Starting {len(tasks)} workers with max {self.max_workers} concurrent...")
         await asyncio.gather(*tasks, return_exceptions=True)
         
         # Enviar resumen con IA

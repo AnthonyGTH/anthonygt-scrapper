@@ -1,0 +1,164 @@
+[
+  {
+    "nombre_exacto": "PlayStation 5",
+    "categoria": "Consola",
+    "marca": "Sony",
+    "precio_estimado": 19999,
+    "facilidad_reventa": 10,
+    "demanda": "Alta",
+    "keywords_busqueda": "PlayStation 5, consola Sony, videojuegos"
+  },
+  {
+    "nombre_exacto": "Xbox Series X",
+    "categoria": "Consola",
+    "marca": "Microsoft",
+    "precio_estimado": 19999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "Xbox Series X, consola Microsoft, videojuegos"
+  },
+  {
+    "nombre_exacto": "iPhone 13",
+    "categoria": "Celular",
+    "marca": "Apple",
+    "precio_estimado": 24999,
+    "facilidad_reventa": 10,
+    "demanda": "Alta",
+    "keywords_busqueda": "iPhone 13, celular Apple, smartphone"
+  },
+  {
+    "nombre_exacto": "Samsung Galaxy S21",
+    "categoria": "Celular",
+    "marca": "Samsung",
+    "precio_estimado": 21999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "Samsung Galaxy S21, celular Samsung, smartphone"
+  },
+  {
+    "nombre_exacto": "AirPods Pro",
+    "categoria": "Audífonos",
+    "marca": "Apple",
+    "precio_estimado": 4999,
+    "facilidad_reventa": 8,
+    "demanda": "Alta",
+    "keywords_busqueda": "AirPods Pro, audífonos Apple, inalámbricos"
+  },
+  {
+    "nombre_exacto": "Sony WH-1000XM4",
+    "categoria": "Audífonos",
+    "marca": "Sony",
+    "precio_estimado": 8999,
+    "facilidad_reventa": 8,
+    "demanda": "Alta",
+    "keywords_busqueda": "Sony WH-1000XM4, audífonos Sony, cancelación de ruido"
+  },
+  {
+    "nombre_exacto": "Canon EOS Rebel T7",
+    "categoria": "Cámara",
+    "marca": "Canon",
+    "precio_estimado": 12999,
+    "facilidad_reventa": 7,
+    "demanda": "Media",
+    "keywords_busqueda": "Canon EOS Rebel T7, cámara Canon, fotografía"
+  },
+  {
+    "nombre_exacto": "Nikon D3500",
+    "categoria": "Cámara",
+    "marca": "Nikon",
+    "precio_estimado": 11999,
+    "facilidad_reventa": 7,
+    "demanda": "Media",
+    "keywords_busqueda": "Nikon D3500, cámara Nikon, fotografía"
+  },
+  {
+    "nombre_exacto": "MacBook Air M1",
+    "categoria": "Laptop",
+    "marca": "Apple",
+    "precio_estimado": 39999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "MacBook Air M1, laptop Apple, computadora"
+  },
+  {
+    "nombre_exacto": "Dell XPS 13",
+    "categoria": "Laptop",
+    "marca": "Dell",
+    "precio_estimado": 34999,
+    "facilidad_reventa": 8,
+    "demanda": "Media",
+    "keywords_busqueda": "Dell XPS 13, laptop Dell, computadora"
+  },
+  {
+    "nombre_exacto": "iPad Air (2022)",
+    "categoria": "Tablet",
+    "marca": "Apple",
+    "precio_estimado": 19999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "iPad Air 2022, tablet Apple, tecnología"
+  },
+  {
+    "nombre_exacto": "Samsung Galaxy Tab S7",
+    "categoria": "Tablet",
+    "marca": "Samsung",
+    "precio_estimado": 17999,
+    "facilidad_reventa": 8,
+    "demanda": "Media",
+    "keywords_busqueda": "Samsung Galaxy Tab S7, tablet Samsung, tecnología"
+  },
+  {
+    "nombre_exacto": "Apple Watch Series 7",
+    "categoria": "Smartwatch",
+    "marca": "Apple",
+    "precio_estimado": 10999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "Apple Watch Series 7, smartwatch Apple, tecnología"
+  },
+  {
+    "nombre_exacto": "Samsung Galaxy Watch 4",
+    "categoria": "Smartwatch",
+    "marca": "Samsung",
+    "precio_estimado": 7999,
+    "facilidad_reventa": 8,
+    "demanda": "Media",
+    "keywords_busqueda": "Samsung Galaxy Watch 4, smartwatch Samsung, tecnología"
+  },
+  {
+    "nombre_exacto": "Nintendo Switch",
+    "categoria": "Consola",
+    "marca": "Nintendo",
+    "precio_estimado": 7999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "Nintendo Switch, consola Nintendo, videojuegos"
+  },
+  {
+    "nombre_exacto": "Sony PlayStation VR",
+    "categoria": "Consola",
+    "marca": "Sony",
+    "precio_estimado": 14999,
+    "facilidad_reventa": 7,
+    "demanda": "Media",
+    "keywords_busqueda": "Sony PlayStation VR, realidad virtual, videojuegos"
+  },
+  {
+    "nombre_exacto": "Google Pixel 6",
+    "categoria": "Celular",
+    "marca": "Google",
+    "precio_estimado": 19999,
+    "facilidad_reventa": 8,
+    "demanda": "Media",
+    "keywords_busqueda": "Google Pixel 6, celular Google, smartphone"
+  },
+  {
+    "nombre_exacto": "Oculus Quest 2",
+    "categoria": "Consola",
+    "marca": "Meta",
+    "precio_estimado": 10999,
+    "facilidad_reventa": 8,
+    "demanda": "Media",
+    "keywords_busqueda": "Oculus Quest 2, realidad virtual, videojuegos"
+  }
+]

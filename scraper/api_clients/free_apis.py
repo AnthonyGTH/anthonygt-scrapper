@@ -17,6 +17,7 @@ class FreeAPIClient:
     
     def __init__(self):
         self.session = None
+        self.browser_semaphore = asyncio.Semaphore(3)  # Limit to 3 concurrent browsers
     
     async def __aenter__(self):
         self.session = aiohttp.ClientSession()
@@ -1390,26 +1391,35 @@ class UnifiedFreeAPIClient:
     
     def __init__(self):
         self.free_client = FreeAPIClient()
+        self.site_semaphore = asyncio.Semaphore(5)  # Limit to 5 concurrent sites
     
     async def search_all_sites_free(self, query: str, limit_per_site: int = 5) -> Dict[str, List[Dict[str, Any]]]:
-        """Search all sites using free methods"""
+        """Search all sites using free methods with limited concurrency"""
         print(f"🚀 Free APIs: Searching '{query}' across ALL sites...")
         
-        # Create tasks for all sites
+        # Create semaphore-limited tasks for all sites
+        async def limited_search(site_name, search_func):
+            async with self.site_semaphore:
+                try:
+                    return await search_func(query, limit_per_site)
+                except Exception as e:
+                    print(f"❌ {site_name} error: {e}")
+                    return []
+        
         tasks = [
-            self.free_client.search_mercadolibre_free(query, limit_per_site),
-            self.free_client.search_amazon_improved_scraping(query, limit_per_site),
-            self.free_client.search_walmart_improved_scraping(query, limit_per_site),
-            self.free_client.search_liverpool_improved_scraping(query, limit_per_site),
-            self.free_client.search_coppel_scraping(query, limit_per_site),
-            self.free_client.search_elektra_scraping(query, limit_per_site),
-            self.free_client.search_aurrera_scraping(query, limit_per_site),
-            self.free_client.search_costco_scraping(query, limit_per_site),
-            self.free_client.search_sams_scraping(query, limit_per_site),
-            self.free_client.search_samsung_scraping(query, limit_per_site)
+            limited_search("MercadoLibre", self.free_client.search_mercadolibre_free),
+            limited_search("Amazon", self.free_client.search_amazon_improved_scraping),
+            limited_search("Walmart", self.free_client.search_walmart_improved_scraping),
+            limited_search("Liverpool", self.free_client.search_liverpool_improved_scraping),
+            limited_search("Coppel", self.free_client.search_coppel_scraping),
+            limited_search("Elektra", self.free_client.search_elektra_scraping),
+            limited_search("Aurrera", self.free_client.search_aurrera_scraping),
+            limited_search("Costco", self.free_client.search_costco_scraping),
+            limited_search("Sams", self.free_client.search_sams_scraping),
+            limited_search("Samsung", self.free_client.search_samsung_scraping)
         ]
         
-        # Execute all tasks in parallel
+        # Execute all tasks in parallel with limited concurrency
         results = await asyncio.gather(*tasks, return_exceptions=True)
         
         # Organize results

@@ -1,0 +1,164 @@
+[
+  {
+    "nombre_exacto": "PlayStation 5",
+    "categoria": "Consola",
+    "marca": "Sony",
+    "precio_estimado": 14999,
+    "facilidad_reventa": 10,
+    "demanda": "Alta",
+    "keywords_busqueda": "PlayStation 5, consola Sony, PS5"
+  },
+  {
+    "nombre_exacto": "Xbox Series X",
+    "categoria": "Consola",
+    "marca": "Microsoft",
+    "precio_estimado": 14999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "Xbox Series X, consola Xbox, Microsoft"
+  },
+  {
+    "nombre_exacto": "iPhone 13",
+    "categoria": "Celular",
+    "marca": "Apple",
+    "precio_estimado": 24999,
+    "facilidad_reventa": 10,
+    "demanda": "Alta",
+    "keywords_busqueda": "iPhone 13, celular Apple, smartphone"
+  },
+  {
+    "nombre_exacto": "Samsung Galaxy S21",
+    "categoria": "Celular",
+    "marca": "Samsung",
+    "precio_estimado": 19999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "Samsung Galaxy S21, celular Samsung, smartphone"
+  },
+  {
+    "nombre_exacto": "AirPods Pro",
+    "categoria": "Audífonos",
+    "marca": "Apple",
+    "precio_estimado": 4999,
+    "facilidad_reventa": 8,
+    "demanda": "Alta",
+    "keywords_busqueda": "AirPods Pro, audífonos Apple, inalámbricos"
+  },
+  {
+    "nombre_exacto": "Sony WH-1000XM4",
+    "categoria": "Audífonos",
+    "marca": "Sony",
+    "precio_estimado": 8999,
+    "facilidad_reventa": 8,
+    "demanda": "Alta",
+    "keywords_busqueda": "Sony WH-1000XM4, audífonos Sony, cancelación de ruido"
+  },
+  {
+    "nombre_exacto": "Canon EOS M50",
+    "categoria": "Cámara",
+    "marca": "Canon",
+    "precio_estimado": 19999,
+    "facilidad_reventa": 7,
+    "demanda": "Media",
+    "keywords_busqueda": "Canon EOS M50, cámara Canon, mirrorless"
+  },
+  {
+    "nombre_exacto": "Nikon Z50",
+    "categoria": "Cámara",
+    "marca": "Nikon",
+    "precio_estimado": 21999,
+    "facilidad_reventa": 7,
+    "demanda": "Media",
+    "keywords_busqueda": "Nikon Z50, cámara Nikon, mirrorless"
+  },
+  {
+    "nombre_exacto": "MacBook Air M1",
+    "categoria": "Laptop",
+    "marca": "Apple",
+    "precio_estimado": 34999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "MacBook Air M1, laptop Apple, ultradelgada"
+  },
+  {
+    "nombre_exacto": "Dell XPS 13",
+    "categoria": "Laptop",
+    "marca": "Dell",
+    "precio_estimado": 32999,
+    "facilidad_reventa": 8,
+    "demanda": "Media",
+    "keywords_busqueda": "Dell XPS 13, laptop Dell, ultradelgada"
+  },
+  {
+    "nombre_exacto": "iPad Air 4",
+    "categoria": "Tablet",
+    "marca": "Apple",
+    "precio_estimado": 19999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "iPad Air 4, tablet Apple, iPad"
+  },
+  {
+    "nombre_exacto": "Samsung Galaxy Tab S7",
+    "categoria": "Tablet",
+    "marca": "Samsung",
+    "precio_estimado": 17999,
+    "facilidad_reventa": 8,
+    "demanda": "Alta",
+    "keywords_busqueda": "Samsung Galaxy Tab S7, tablet Samsung, Android"
+  },
+  {
+    "nombre_exacto": "Apple Watch Series 7",
+    "categoria": "Smartwatch",
+    "marca": "Apple",
+    "precio_estimado": 10999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "Apple Watch Series 7, smartwatch Apple, reloj inteligente"
+  },
+  {
+    "nombre_exacto": "Samsung Galaxy Watch 4",
+    "categoria": "Smartwatch",
+    "marca": "Samsung",
+    "precio_estimado": 7999,
+    "facilidad_reventa": 8,
+    "demanda": "Media",
+    "keywords_busqueda": "Samsung Galaxy Watch 4, smartwatch Samsung, reloj inteligente"
+  },
+  {
+    "nombre_exacto": "Nintendo Switch",
+    "categoria": "Consola",
+    "marca": "Nintendo",
+    "precio_estimado": 9999,
+    "facilidad_reventa": 9,
+    "demanda": "Alta",
+    "keywords_busqueda": "Nintendo Switch, consola Nintendo, videojuegos"
+  },
+  {
+    "nombre_exacto": "Sony PlayStation 4 Pro",
+    "categoria": "Consola",
+    "marca": "Sony",
+    "precio_estimado": 10999,
+    "facilidad_reventa": 8,
+    "demanda": "Media",
+    "keywords_busqueda": "PlayStation 4 Pro, consola Sony, PS4"
+  },
+  {
+    "nombre_exacto": "OnePlus 9",
+    "categoria": "Celular",
+    "marca": "OnePlus",
+    "precio_estimado": 17999,
+    "facilidad_reventa": 7,
+    "demanda": "Media",
+    "keywords_busqueda": "OnePlus 9, celular OnePlus, smartphone"
+  },
+  {
+    "nombre_exacto": "Xiaomi Mi 11",
+    "categoria": "Celular",
+    "marca": "Xiaomi",
+    "precio_estimado": 15999,
+    "facilidad_reventa": 7,
+    "demanda": "Media",
+    "keywords_busqueda": "Xiaomi Mi 11, celular Xiaomi, smartphone"
+  }
+]
