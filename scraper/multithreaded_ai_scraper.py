@@ -18,6 +18,9 @@ import concurrent.futures
 from threading import Thread
 import queue
 
+# Import free API clients
+from api_clients.free_apis import search_products_free
+
 # Agregar path para imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -147,18 +150,29 @@ class MultithreadedAIScraper:
             search_query = str(keywords).replace(' ', '+')
             search_url = f"https://www.amazon.com.mx/s?k={search_query}&ref=sr_pg_1"
             
-            await page.goto(search_url, wait_until='domcontentloaded', timeout=15000)
-            await page.wait_for_timeout(random.randint(1000, 2000))
+            await page.goto(search_url, wait_until='domcontentloaded', timeout=30000)
+            await page.wait_for_timeout(random.randint(2000, 4000))
             
             # Simular comportamiento humano
             await page.evaluate(f"window.scrollTo(0, {random.randint(100, 500)})")
             await page.wait_for_timeout(random.randint(500, 1000))
             
-            # Múltiples selectores para productos
+            # Debug: Verificar si la página cargó correctamente
+            page_title = await page.title()
+            print(f"🔍 Amazon page title: {page_title}")
+            
+            # Verificar si hay elementos de productos en la página
+            all_elements = await page.query_selector_all('*')
+            print(f"🔍 Total elements on Amazon page: {len(all_elements)}")
+            
+            # Múltiples selectores para productos (actualizados)
             product_selectors = [
                 '[data-component-type="s-search-result"]',
                 '.s-result-item',
-                '[data-asin]'
+                '[data-asin]',
+                '.s-card-container',
+                '[data-index]',
+                '.s-widget-container'
             ]
             
             products = []
@@ -170,11 +184,14 @@ class MultithreadedAIScraper:
                         
                         for element in elements[:3]:  # Limitar a 3 productos por selector
                             try:
-                                # Título
+                                # Título (selectores actualizados)
                                 title_selectors = [
                                     'h2 a span',
                                     'h2 span',
-                                    '.s-size-mini span'
+                                    '.s-size-mini span',
+                                    'h2',
+                                    '.s-title-instructions-style',
+                                    '.s-link-style'
                                 ]
                                 
                                 title = None
@@ -191,11 +208,14 @@ class MultithreadedAIScraper:
                                 if not title:
                                     continue
                                 
-                                # Precio
+                                # Precio (selectores actualizados)
                                 price_selectors = [
                                     '.a-price-whole',
                                     '.a-price .a-offscreen',
-                                    '.a-price-range'
+                                    '.a-price-range',
+                                    '.a-price-symbol',
+                                    '[data-a-price-amount]',
+                                    '.a-price'
                                 ]
                                 
                                 price = None
@@ -267,18 +287,30 @@ class MultithreadedAIScraper:
             search_query = str(keywords).replace(' ', '%20')
             search_url = f"https://listado.mercadolibre.com.mx/{search_query}"
             
-            await page.goto(search_url, wait_until='domcontentloaded', timeout=15000)
-            await page.wait_for_timeout(random.randint(1000, 2000))
+            await page.goto(search_url, wait_until='domcontentloaded', timeout=30000)
+            await page.wait_for_timeout(random.randint(2000, 4000))
             
             # Simular comportamiento humano
             await page.evaluate(f"window.scrollTo(0, {random.randint(100, 500)})")
             await page.wait_for_timeout(random.randint(500, 1000))
             
-            # Múltiples selectores para productos
+            # Debug: Verificar si la página cargó correctamente
+            page_title = await page.title()
+            print(f"🔍 Amazon page title: {page_title}")
+            
+            # Verificar si hay elementos de productos en la página
+            all_elements = await page.query_selector_all('*')
+            print(f"🔍 Total elements on Amazon page: {len(all_elements)}")
+            
+            # Múltiples selectores para productos (actualizados)
             product_selectors = [
                 '.ui-search-item',
+                '.ui-search-results .ui-search-item',
+                '[data-testid="product"]',
                 '.item',
-                '[data-testid="product-item"]'
+                '.ui-search-item__wrapper',
+                '.ui-search-layout__item',
+                '.ui-search-results__item'
             ]
             
             products = []
@@ -290,11 +322,13 @@ class MultithreadedAIScraper:
                         
                         for element in elements[:3]:
                             try:
-                                # Título
+                                # Título (selectores actualizados)
                                 title_selectors = [
                                     '.ui-search-item__title',
                                     'h2',
-                                    '.item__title'
+                                    '.item__title',
+                                    '.ui-search-item__title-label',
+                                    'a[title]'
                                 ]
                                 
                                 title = None
@@ -311,11 +345,15 @@ class MultithreadedAIScraper:
                                 if not title:
                                     continue
                                 
-                                # Precio
+                                # Precio (selectores actualizados)
                                 price_selectors = [
                                     '.price-tag-fraction',
                                     '.ui-search-price__part',
-                                    '.item__price'
+                                    '.item__price',
+                                    '.ui-search-price__second-line .price-tag-amount',
+                                    '.ui-search-price__second-line',
+                                    '.price-tag-amount',
+                                    '.ui-search-price'
                                 ]
                                 
                                 price = None
@@ -631,81 +669,71 @@ class MultithreadedAIScraper:
             print(f"❌ Error sending no deals notification: {e}")
     
     async def scrape_product_worker(self, product: Dict[str, Any], worker_id: int):
-        """Worker for scraping a product (multithreaded)"""
+        """Worker for scraping a product using APIs (multithreaded)"""
         try:
             print(f"🔄 Worker {worker_id}: Processing {product['nombre_exacto']}")
             
-            async with async_playwright() as playwright:
-                browser, context = await self.create_stealth_browser(playwright)
-                page = await context.new_page()
-                
+            # Use unified API client instead of scraping
+            search_query = product['keywords_busqueda']
+            print(f"🔍 Worker {worker_id}: Searching '{search_query}' via APIs...")
+            
+            # Search all sites using free APIs
+            api_results = await search_products_free(search_query, limit_per_site=3)
+            
+            # Flatten results from all sites
+            all_results = []
+            for site, products in api_results.items():
+                for product_data in products:
+                    product_data['site'] = site
+                    all_results.append(product_data)
+            
+            print(f"📊 Worker {worker_id}: Found {len(all_results)} total products via APIs")
+            
+            for result in all_results:
                 try:
-                    # Scraping en Amazon
-                    amazon_results = await self.scrape_amazon_advanced(
-                        page, 
-                        product['nombre_exacto'], 
-                        product['keywords_busqueda']
-                    )
+                    # Extraer precio numérico
+                    price_text = result['price'].replace('$', '').replace(',', '').replace('MXN', '').strip()
+                    price_value = float(price_text.split()[0])
                     
-                    # Scraping en MercadoLibre
-                    mercadolibre_results = await self.scrape_mercadolibre_advanced(
-                        page, 
-                        product['nombre_exacto'], 
-                        product['keywords_busqueda']
-                    )
+                    # Calcular descuento
+                    estimated_price = product.get('precio_estimado', 10000)
+                    discount = ((estimated_price - price_value) / estimated_price) * 100
                     
-                    # Procesar resultados
-                    all_results = amazon_results + mercadolibre_results
-                    print(f"📊 Worker {worker_id}: Found {len(all_results)} total products")
+                    print(f"💰 Worker {worker_id}: Found {result['name'][:30]}... - Price: {result['price']} - Discount: {discount:.1f}%")
                     
-                    for result in all_results:
-                        try:
-                            # Extraer precio numérico
-                            price_text = result['price'].replace('$', '').replace(',', '').replace('MXN', '').strip()
-                            price_value = float(price_text.split()[0])
-                            
-                            # Calcular descuento
-                            estimated_price = product.get('precio_estimado', 10000)
-                            discount = ((estimated_price - price_value) / estimated_price) * 100
-                            
-                            print(f"💰 Worker {worker_id}: Found {result['name'][:30]}... - Price: {result['price']} - Discount: {discount:.1f}%")
-                            
-                            if discount >= 20:  # Solo ofertas >=20% descuento
-                                deal_data = {
-                                    'name': result['name'],
-                                    'current_price': result['price'],
-                                    'estimated_price': estimated_price,
-                                    'discount_percentage': discount,
-                                    'site': result['site'],
-                                    'url': result['url']
-                                }
+                    if discount >= 20:  # Solo ofertas >=20% descuento
+                        deal_data = {
+                            'name': result['name'],
+                            'current_price': result['price'],
+                            'estimated_price': estimated_price,
+                            'discount_percentage': discount,
+                            'site': result['site'],
+                            'url': result['url']
+                        }
+                        
+                        # Análisis con IA
+                        ai_analysis = await self.analyze_deal_with_ai(deal_data)
+                        
+                        # Clasificar por tipo de descuento
+                        if discount > 50:
+                            print(f"🔥 Worker {worker_id}: EXCELLENT DEAL >50% - {result['name'][:30]}... - {discount:.1f}% off")
+                            self.high_discount_deals.append(deal_data)
+                            if ai_analysis['confidence_score'] >= 0.65:
+                                await self.send_telegram_notification(
+                                    deal_data, ai_analysis, 
+                                    TELEGRAM_CHAT_ID_HIGH, "high"
+                                )
+                        elif discount >= 20:
+                            print(f"💰 Worker {worker_id}: GOOD DEAL 20-50% - {result['name'][:30]}... - {discount:.1f}% off")
+                            self.medium_discount_deals.append(deal_data)
+                            if ai_analysis['confidence_score'] >= 0.6:
+                                await self.send_telegram_notification(
+                                    deal_data, ai_analysis, 
+                                    TELEGRAM_CHAT_ID_MEDIUM, "medium"
+                                )
                                 
-                                # Análisis con IA
-                                ai_analysis = await self.analyze_deal_with_ai(deal_data)
-                                
-                                # Clasificar por tipo de descuento
-                                if discount > 50:
-                                    print(f"🔥 Worker {worker_id}: EXCELLENT DEAL >50% - {result['name'][:30]}... - {discount:.1f}% off")
-                                    self.high_discount_deals.append(deal_data)
-                                    if ai_analysis['confidence_score'] >= 0.65:
-                                        await self.send_telegram_notification(
-                                            deal_data, ai_analysis, 
-                                            TELEGRAM_CHAT_ID_HIGH, "high"
-                                        )
-                                elif discount >= 20:
-                                    print(f"💰 Worker {worker_id}: GOOD DEAL 20-50% - {result['name'][:30]}... - {discount:.1f}% off")
-                                    self.medium_discount_deals.append(deal_data)
-                                    if ai_analysis['confidence_score'] >= 0.6:
-                                        await self.send_telegram_notification(
-                                            deal_data, ai_analysis, 
-                                            TELEGRAM_CHAT_ID_MEDIUM, "medium"
-                                        )
-                                    
-                        except Exception as e:
-                            continue
-                    
-                finally:
-                    await browser.close()
+                except Exception as e:
+                    continue
                     
         except Exception as e:
             print(f"❌ Error in worker {worker_id}: {e}")
