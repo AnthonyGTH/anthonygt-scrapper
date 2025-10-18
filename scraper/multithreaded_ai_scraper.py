@@ -675,6 +675,11 @@ class MultithreadedAIScraper:
             
             # Use unified API client instead of scraping
             search_query = product['keywords_busqueda']
+            
+            # Convert list to string if needed
+            if isinstance(search_query, list):
+                search_query = ' '.join(search_query)
+            
             print(f"🔍 Worker {worker_id}: Searching '{search_query}' via APIs...")
             
             # Search all sites using free APIs

@@ -40,7 +40,7 @@ class ProductGenerator:
             - precio_estimado: Precio estimado en MXN
             - facilidad_reventa: 1-10 (10 = muy fácil de revender)
             - demanda: Alta/Media/Baja
-            - keywords_busqueda: Palabras clave para buscar en tiendas
+            - keywords_busqueda: Palabras clave para buscar en tiendas (como string, no array)
             
             Responde SOLO en formato JSON válido con un array de objetos.
             """
@@ -110,6 +110,12 @@ class ProductGenerator:
             int(product['precio_estimado'])
             int(product['facilidad_reventa'])
         except (ValueError, TypeError):
+            return False
+        
+        # Ensure keywords_busqueda is a string, not a list
+        if isinstance(product['keywords_busqueda'], list):
+            product['keywords_busqueda'] = ' '.join(product['keywords_busqueda'])
+        elif not isinstance(product['keywords_busqueda'], str):
             return False
         
         return True
